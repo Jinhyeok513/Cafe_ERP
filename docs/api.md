@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The read-only FastAPI service exposes the verified PostgreSQL inventory views to a future dashboard without duplicating stock calculations in the frontend. All quantities retain the Product Master inventory unit.
+The FastAPI service exposes verified PostgreSQL inventory views and controlled reorder commands without duplicating stock calculations in the frontend. All quantities retain the Product Master inventory or order unit.
 
 ## Setup
 
@@ -33,6 +33,8 @@ API_PORT=8000 \
 | GET | `/api/inventory/{product_id}/movements` | Immutable product movement history |
 | GET | `/api/discrepancies` | Receiving discrepancy detail |
 | GET | `/api/stocktakes/accuracy` | Daily physical-count accuracy |
+| GET | `/api/reorder/recommendations` | Consumption-based supplier order recommendations |
+| POST | `/api/purchase-orders/drafts` | Create a validated draft purchase order |
 
 Interactive OpenAPI documentation is available at `/docs`, with the raw schema at `/openapi.json`.
 
@@ -50,6 +52,8 @@ NO_REORDER_POINT
 Movement history supports the four ledger movement types. Receiving discrepancies can be filtered by reason and supplier. Stocktake accuracy supports inclusive `date_from` and `date_to` values; an inverted range returns HTTP 422.
 
 All query values are passed to Psycopg as parameters. Only fixed internal SQL fragments are composed for optional filters.
+
+Draft purchase orders accept one supplier, delivery date, operator and one or more positive product quantities. Products are checked against the Product Master, must be active, and must belong to the selected supplier. The API always derives `order_unit` from Product Master rather than trusting client input.
 
 ## Error behavior
 

@@ -31,18 +31,19 @@ INSERT INTO products (
     shelf_life_days,
     typical_order_frequency_days,
     typical_order_qty,
-    reorder_point_inventory_qty
+    reorder_point_inventory_qty,
+    safety_stock_inventory_qty
 )
 VALUES
-    ('MILK_FULL', 'Full Cream Milk', 'MILK', 'bottle', 'bottle', 1, 1.5, 'litre', 'SUP_B', TRUE, NULL, 1, 15, NULL),
-    ('MILK_SKIM', 'Skim Milk', 'MILK', 'bottle', 'bottle', 1, 1.5, 'litre', 'SUP_B', TRUE, NULL, 1, 3, NULL),
-    ('MILK_ALMOND', 'Almond Milk', 'MILK', 'carton', 'carton', 1, 1, 'litre', 'SUP_B', TRUE, NULL, 2, 8, 3),
-    ('MILK_OAT', 'Oat Milk', 'MILK', 'carton', 'carton', 1, 1, 'litre', 'SUP_B', TRUE, NULL, 2, 8, 3),
-    ('MILK_SOY', 'Soy Milk', 'MILK', 'carton', 'carton', 1, 1, 'litre', 'SUP_B', TRUE, NULL, 2, 8, 3),
-    ('MILK_LACTOSE_FREE', 'Lactose-Free Milk', 'MILK', 'carton', 'carton', 1, 1, 'litre', 'SUP_B', TRUE, NULL, 7, 8, NULL),
-    ('COFFEE_REGULAR', 'Regular Coffee Beans', 'COFFEE', 'bag', 'bag', 1, 1, 'kilogram', 'SUP_D', FALSE, NULL, 3, 8, NULL),
-    ('CROISSANT', 'Croissant', 'BAKERY', 'each', 'each', 1, NULL, NULL, 'SUP_A', TRUE, 2, 1, 20, NULL),
-    ('EGGS', 'Eggs', 'FOOD', 'each', 'tray', 25, NULL, NULL, 'SUP_C', TRUE, NULL, 3, 9, 50)
+    ('MILK_FULL', 'Full Cream Milk', 'MILK', 'bottle', 'bottle', 1, 1.5, 'litre', 'SUP_B', TRUE, NULL, 1, 15, NULL, 5),
+    ('MILK_SKIM', 'Skim Milk', 'MILK', 'bottle', 'bottle', 1, 1.5, 'litre', 'SUP_B', TRUE, NULL, 1, 3, NULL, 1),
+    ('MILK_ALMOND', 'Almond Milk', 'MILK', 'carton', 'carton', 1, 1, 'litre', 'SUP_B', TRUE, NULL, 2, 8, 3, 2),
+    ('MILK_OAT', 'Oat Milk', 'MILK', 'carton', 'carton', 1, 1, 'litre', 'SUP_B', TRUE, NULL, 2, 8, 3, 3),
+    ('MILK_SOY', 'Soy Milk', 'MILK', 'carton', 'carton', 1, 1, 'litre', 'SUP_B', TRUE, NULL, 2, 8, 3, 2),
+    ('MILK_LACTOSE_FREE', 'Lactose-Free Milk', 'MILK', 'carton', 'carton', 1, 1, 'litre', 'SUP_B', TRUE, NULL, 7, 8, NULL, 1),
+    ('COFFEE_REGULAR', 'Regular Coffee Beans', 'COFFEE', 'bag', 'bag', 1, 1, 'kilogram', 'SUP_D', FALSE, NULL, 3, 8, NULL, 1),
+    ('CROISSANT', 'Croissant', 'BAKERY', 'each', 'each', 1, NULL, NULL, 'SUP_A', TRUE, 2, 1, 20, NULL, 5),
+    ('EGGS', 'Eggs', 'FOOD', 'each', 'tray', 25, NULL, NULL, 'SUP_C', TRUE, NULL, 3, 9, 50, 25)
 ON CONFLICT (product_id) DO NOTHING;
 
 INSERT INTO supplier_delivery_schedule (

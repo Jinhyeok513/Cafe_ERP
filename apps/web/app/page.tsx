@@ -41,7 +41,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="app-shell">
-      <Sidebar />
+      <Sidebar reorderCount={reorderItems.length} />
       <main className="main-content">
         <header className="topbar">
           <div>

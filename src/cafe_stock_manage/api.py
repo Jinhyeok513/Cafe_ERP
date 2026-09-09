@@ -1,4 +1,4 @@
-"""FastAPI application for read-only cafe inventory operations."""
+"""FastAPI application for cafe inventory operations."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ import psycopg
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.responses import JSONResponse
 from psycopg_pool import ConnectionPool
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from .repository import InventoryRepository
 
@@ -91,6 +91,58 @@ class KpiResponse(BaseModel):
     data_quality_issue_count: int
 
 
+class ReorderRecommendationItem(BaseModel):
+    product_id: str
+    product_name: str
+    category: str
+    supplier_id: str
+    supplier_name: str
+    inventory_unit: str
+    order_unit: str
+    pack_size: Decimal
+    current_quantity: Decimal
+    on_order_quantity: Decimal
+    average_daily_usage: Decimal
+    lead_time_days: int
+    safety_stock_inventory_qty: Decimal
+    reorder_point_inventory_qty: Decimal | None
+    projected_on_delivery: Decimal
+    target_inventory_quantity: Decimal
+    recommended_order_quantity: Decimal
+    expected_delivery_date: date
+    urgency: str
+
+
+class DraftPurchaseOrderItemRequest(BaseModel):
+    product_id: str = Field(min_length=1, max_length=80)
+    ordered_quantity: Decimal = Field(gt=0, max_digits=14, decimal_places=4)
+
+
+class DraftPurchaseOrderRequest(BaseModel):
+    supplier_id: str = Field(min_length=1, max_length=80)
+    expected_delivery_date: date
+    ordered_by: str = Field(min_length=1, max_length=120)
+    items: list[DraftPurchaseOrderItemRequest] = Field(min_length=1, max_length=100)
+
+
+class DraftPurchaseOrderItemResponse(BaseModel):
+    po_item_id: int
+    product_id: str
+    ordered_quantity: Decimal
+    order_unit: str
+
+
+class DraftPurchaseOrderResponse(BaseModel):
+    po_id: int
+    source_key: str
+    supplier_id: str
+    order_datetime: datetime
+    expected_delivery_date: date
+    order_status: str
+    ordered_by: str
+    items: list[DraftPurchaseOrderItemResponse]
+
+
 def get_repository(request: Request) -> InventoryRepository:
     return request.app.state.repository
 
@@ -125,7 +177,7 @@ def create_app(repository: InventoryRepository | Any | None = None) -> FastAPI:
     app = FastAPI(
         title="Cafe Stock Manage API",
         version="0.1.0",
-        description="Read-only inventory, receiving and stocktake operations API.",
+        description="Inventory, receiving, stocktake and replenishment operations API.",
         lifespan=lifespan,
     )
 
@@ -147,6 +199,38 @@ def create_app(repository: InventoryRepository | Any | None = None) -> FastAPI:
     @app.get("/api/kpis", response_model=KpiResponse, tags=["dashboard"])
     def kpis(repo: RepositoryDependency) -> dict[str, Any]:
         return repo.kpis()
+
+    @app.get(
+        "/api/reorder/recommendations",
+        response_model=list[ReorderRecommendationItem],
+        tags=["reorder"],
+    )
+    def reorder_recommendations(
+        repo: RepositoryDependency,
+        urgency: Literal["CRITICAL", "ORDER_NOW", "REVIEW", "PLANNED"]
+        | None = Query(default=None),
+    ) -> list[dict[str, Any]]:
+        return repo.reorder_recommendations(urgency)
+
+    @app.post(
+        "/api/purchase-orders/drafts",
+        response_model=DraftPurchaseOrderResponse,
+        status_code=201,
+        tags=["reorder"],
+    )
+    def create_draft_purchase_order(
+        request: DraftPurchaseOrderRequest,
+        repo: RepositoryDependency,
+    ) -> dict[str, Any]:
+        try:
+            return repo.create_draft_purchase_order(
+                request.supplier_id,
+                request.expected_delivery_date,
+                request.ordered_by,
+                [item.model_dump() for item in request.items],
+            )
+        except ValueError as error:
+            raise HTTPException(status_code=422, detail=str(error)) from error
 
     @app.get("/api/inventory", response_model=list[InventoryItem], tags=["inventory"])
     def inventory(

@@ -64,14 +64,44 @@ export type DashboardData = {
   stocktakes: StocktakeAccuracy[];
 };
 
+export type ReorderRecommendation = {
+  product_id: string;
+  product_name: string;
+  category: string;
+  supplier_id: string;
+  supplier_name: string;
+  inventory_unit: string;
+  order_unit: string;
+  pack_size: string;
+  current_quantity: string;
+  on_order_quantity: string;
+  average_daily_usage: string;
+  lead_time_days: number;
+  safety_stock_inventory_qty: string;
+  reorder_point_inventory_qty: string | null;
+  projected_on_delivery: string;
+  target_inventory_quantity: string;
+  recommended_order_quantity: string;
+  expected_delivery_date: string;
+  urgency: "CRITICAL" | "ORDER_NOW" | "REVIEW" | "PLANNED";
+};
+
 const API_URL = process.env.CAFE_API_URL ?? "http://127.0.0.1:8010";
 
+export function cafeApiUrl(path: string) {
+  return `${API_URL}${path}`;
+}
+
 async function getJson<T>(path: string): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, { cache: "no-store" });
+  const response = await fetch(cafeApiUrl(path), { cache: "no-store" });
   if (!response.ok) {
     throw new Error(`Cafe API request failed (${response.status}): ${path}`);
   }
   return response.json() as Promise<T>;
+}
+
+export async function getReorderRecommendations(): Promise<ReorderRecommendation[]> {
+  return getJson<ReorderRecommendation[]>("/api/reorder/recommendations");
 }
 
 export async function getDashboardData(): Promise<DashboardData> {

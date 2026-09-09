@@ -15,6 +15,7 @@ psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/002_inventory_
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/003_stocktakes.sql
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/004_menu_recipes_pos.sql
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/005_dataset_import_and_quality.sql
+psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/006_reorder_planning.sql
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/seeds/001_reference_data.sql
 ```
 
@@ -72,6 +73,7 @@ SELECT * FROM current_inventory_status ORDER BY stock_status, product_id;
 SELECT * FROM receiving_discrepancy_summary ORDER BY supplier_id, discrepancy_reason;
 SELECT * FROM stocktake_accuracy_daily ORDER BY stocktake_date;
 SELECT * FROM data_quality_issues;
+SELECT * FROM reorder_recommendations ORDER BY urgency, expected_delivery_date;
 ```
 
 `inventory_movement_timeline` exposes the signed movement and running quantity for every product. It is the database source for movement history and future dashboard charts.

@@ -9,19 +9,20 @@ import {
   ShoppingCart,
   TrendingUp,
 } from "lucide-react";
+import Link from "next/link";
 
 const navigation = [
-  { label: "Overview", icon: LayoutDashboard, active: true },
-  { label: "Inventory", icon: Boxes },
-  { label: "Receiving", icon: ReceiptText },
-  { label: "Stocktakes", icon: ClipboardCheck },
-  { label: "Reorder", icon: PackagePlus, count: 1 },
-  { label: "POS usage", icon: ShoppingCart },
-  { label: "Forecast", icon: TrendingUp },
-  { label: "Reports", icon: FileSpreadsheet },
+  { label: "Overview", icon: LayoutDashboard, href: "/" },
+  { label: "Inventory", icon: Boxes, href: "/#inventory-title" },
+  { label: "Receiving", icon: ReceiptText, href: "/#exceptions-title" },
+  { label: "Stocktakes", icon: ClipboardCheck, href: "/#accuracy-title" },
+  { label: "Reorder", icon: PackagePlus, href: "/reorder" },
+  { label: "POS usage", icon: ShoppingCart, href: "/#pos-usage" },
+  { label: "Forecast", icon: TrendingUp, href: "/#forecast" },
+  { label: "Reports", icon: FileSpreadsheet, href: "/#reports" },
 ];
 
-export function Sidebar() {
+export function Sidebar({ activeLabel = "Overview", reorderCount = 0 }: { activeLabel?: string; reorderCount?: number }) {
   return (
     <aside className="sidebar">
       <div className="brand">
@@ -32,12 +33,12 @@ export function Sidebar() {
         </div>
       </div>
       <nav aria-label="Main navigation">
-        {navigation.map(({ label, icon: Icon, active, count }) => (
-          <a key={label} className={active ? "nav-item active" : "nav-item"} href={active ? "/" : `/#${label.toLowerCase().replace(" ", "-")}`}>
+        {navigation.map(({ label, icon: Icon, href }) => (
+          <Link key={label} className={label === activeLabel ? "nav-item active" : "nav-item"} href={href}>
             <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
             <span>{label}</span>
-            {count ? <span className="nav-count">{count}</span> : null}
-          </a>
+            {label === "Reorder" && reorderCount ? <span className="nav-count">{reorderCount}</span> : null}
+          </Link>
         ))}
       </nav>
       <div className="sidebar-footer">

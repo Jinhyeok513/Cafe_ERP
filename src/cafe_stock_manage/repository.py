@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import date
 from typing import Any
+from uuid import uuid4
 
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
@@ -284,3 +285,151 @@ class InventoryRepository:
             else None
         )
         return row
+
+    def reorder_recommendations(
+        self,
+        urgency: str | None,
+    ) -> list[dict[str, Any]]:
+        urgency_filter = ""
+        parameters: tuple[Any, ...] = ()
+        if urgency is not None:
+            urgency_filter = "AND urgency = %s"
+            parameters = (urgency,)
+        return self.fetch_all(
+            f"""
+            SELECT
+                product_id,
+                product_name,
+                category,
+                supplier_id,
+                supplier_name,
+                inventory_unit,
+                order_unit,
+                pack_size,
+                current_quantity,
+                on_order_quantity,
+                average_daily_usage,
+                lead_time_days,
+                safety_stock_inventory_qty,
+                reorder_point_inventory_qty,
+                projected_on_delivery,
+                target_inventory_quantity,
+                recommended_order_quantity,
+                expected_delivery_date,
+                urgency
+            FROM cafe_stock_manage.reorder_recommendations
+            WHERE recommended_order_quantity > 0
+              {urgency_filter}
+            ORDER BY
+                CASE urgency
+                    WHEN 'CRITICAL' THEN 1
+                    WHEN 'ORDER_NOW' THEN 2
+                    WHEN 'REVIEW' THEN 3
+                    ELSE 4
+                END,
+                expected_delivery_date,
+                supplier_name,
+                product_name
+            """,
+            parameters,
+        )
+
+    def create_draft_purchase_order(
+        self,
+        supplier_id: str,
+        expected_delivery_date: date,
+        ordered_by: str,
+        items: list[dict[str, Any]],
+    ) -> dict[str, Any]:
+        product_ids = [item["product_id"] for item in items]
+        if len(product_ids) != len(set(product_ids)):
+            raise ValueError("A product can appear only once in a draft order")
+
+        with self.pool.connection() as connection:
+            with connection.transaction():
+                with connection.cursor(row_factory=dict_row) as cursor:
+                    cursor.execute(
+                        """
+                        SELECT product_id, product_name, supplier_id, order_unit
+                        FROM cafe_stock_manage.products
+                        WHERE product_id = ANY(%s) AND is_active
+                        """,
+                        (product_ids,),
+                    )
+                    products = {row["product_id"]: row for row in cursor.fetchall()}
+                    missing = sorted(set(product_ids) - set(products))
+                    if missing:
+                        raise ValueError(f"Unknown active products: {', '.join(missing)}")
+                    mismatched = [
+                        row["product_name"]
+                        for row in products.values()
+                        if row["supplier_id"] != supplier_id
+                    ]
+                    if mismatched:
+                        raise ValueError(
+                            "Products do not belong to the selected supplier: "
+                            + ", ".join(sorted(mismatched))
+                        )
+
+                    source_key = f"DRAFT-{uuid4()}"
+                    cursor.execute(
+                        """
+                        INSERT INTO cafe_stock_manage.purchase_orders (
+                            source_key,
+                            supplier_id,
+                            order_datetime,
+                            expected_delivery_date,
+                            order_status,
+                            ordered_by,
+                            notes
+                        )
+                        VALUES (%s, %s, CURRENT_TIMESTAMP, %s, 'DRAFT', %s, %s)
+                        RETURNING po_id, source_key, order_datetime
+                        """,
+                        (
+                            source_key,
+                            supplier_id,
+                            expected_delivery_date,
+                            ordered_by,
+                            "Created from replenishment recommendation",
+                        ),
+                    )
+                    order = cursor.fetchone()
+                    if order is None:
+                        raise RuntimeError("Draft purchase order insert returned no row")
+
+                    created_items: list[dict[str, Any]] = []
+                    for item in items:
+                        product = products[item["product_id"]]
+                        cursor.execute(
+                            """
+                            INSERT INTO cafe_stock_manage.purchase_order_items (
+                                source_key,
+                                po_id,
+                                product_id,
+                                ordered_quantity,
+                                order_unit
+                            )
+                            VALUES (%s, %s, %s, %s, %s)
+                            RETURNING po_item_id, product_id, ordered_quantity, order_unit
+                            """,
+                            (
+                                f"{source_key}-{item['product_id']}",
+                                order["po_id"],
+                                item["product_id"],
+                                item["ordered_quantity"],
+                                product["order_unit"],
+                            ),
+                        )
+                        created_item = cursor.fetchone()
+                        if created_item is not None:
+                            created_items.append(created_item)
+
+        return {
+            **order,
+            "supplier_id": supplier_id,
+            "expected_delivery_date": expected_delivery_date,
+            "order_status": "DRAFT",
+            "ordered_by": ordered_by,
+            "items": created_items,
+        }

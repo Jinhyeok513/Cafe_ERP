@@ -112,6 +112,56 @@ class FakeInventoryRepository:
             }
         ]
 
+    def reorder_recommendations(self, urgency):
+        del urgency
+        return [
+            {
+                "product_id": "EGGS",
+                "product_name": "Eggs",
+                "category": "FOOD",
+                "supplier_id": "SUP_C",
+                "supplier_name": "Food Supplier",
+                "inventory_unit": "each",
+                "order_unit": "tray",
+                "pack_size": Decimal("25"),
+                "current_quantity": Decimal("41"),
+                "on_order_quantity": Decimal("0"),
+                "average_daily_usage": Decimal("12.5"),
+                "lead_time_days": 3,
+                "safety_stock_inventory_qty": Decimal("25"),
+                "reorder_point_inventory_qty": Decimal("50"),
+                "projected_on_delivery": Decimal("3.5"),
+                "target_inventory_quantity": Decimal("100"),
+                "recommended_order_quantity": Decimal("9"),
+                "expected_delivery_date": date(2026, 9, 12),
+                "urgency": "ORDER_NOW",
+            }
+        ]
+
+    def create_draft_purchase_order(
+        self, supplier_id, expected_delivery_date, ordered_by, items
+    ):
+        if supplier_id == "UNKNOWN":
+            raise ValueError("Unknown supplier")
+        return {
+            "po_id": 101,
+            "source_key": "DRAFT-test",
+            "supplier_id": supplier_id,
+            "order_datetime": datetime(2026, 9, 9, 12, 0),
+            "expected_delivery_date": expected_delivery_date,
+            "order_status": "DRAFT",
+            "ordered_by": ordered_by,
+            "items": [
+                {
+                    "po_item_id": 201,
+                    "product_id": item["product_id"],
+                    "ordered_quantity": item["ordered_quantity"],
+                    "order_unit": "tray",
+                }
+                for item in items
+            ],
+        }
+
 
 class ApiTests(unittest.TestCase):
     @classmethod
@@ -163,6 +213,47 @@ class ApiTests(unittest.TestCase):
 
         self.assertEqual(invalid_status.status_code, 422)
         self.assertEqual(invalid_dates.status_code, 422)
+
+    def test_reorder_recommendations_and_draft_creation(self) -> None:
+        recommendations = self.client.get("/api/reorder/recommendations")
+        draft = self.client.post(
+            "/api/purchase-orders/drafts",
+            json={
+                "supplier_id": "SUP_C",
+                "expected_delivery_date": "2026-09-12",
+                "ordered_by": "Manager",
+                "items": [{"product_id": "EGGS", "ordered_quantity": "9"}],
+            },
+        )
+
+        self.assertEqual(recommendations.status_code, 200)
+        self.assertEqual(recommendations.json()[0]["order_unit"], "tray")
+        self.assertEqual(draft.status_code, 201)
+        self.assertEqual(draft.json()["order_status"], "DRAFT")
+        self.assertEqual(draft.json()["items"][0]["ordered_quantity"], "9")
+
+    def test_invalid_draft_is_rejected(self) -> None:
+        empty_items = self.client.post(
+            "/api/purchase-orders/drafts",
+            json={
+                "supplier_id": "SUP_C",
+                "expected_delivery_date": "2026-09-12",
+                "ordered_by": "Manager",
+                "items": [],
+            },
+        )
+        invalid_supplier = self.client.post(
+            "/api/purchase-orders/drafts",
+            json={
+                "supplier_id": "UNKNOWN",
+                "expected_delivery_date": "2026-09-12",
+                "ordered_by": "Manager",
+                "items": [{"product_id": "EGGS", "ordered_quantity": "9"}],
+            },
+        )
+
+        self.assertEqual(empty_items.status_code, 422)
+        self.assertEqual(invalid_supplier.status_code, 422)
 
 
 if __name__ == "__main__":
