@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  BriefcaseBusiness,
   Boxes,
   ClipboardCheck,
   FileSpreadsheet,
@@ -20,6 +21,7 @@ const navigation = [
   { label: "POS usage", icon: ShoppingCart, href: "/pos-usage" },
   { label: "Forecast", icon: TrendingUp, href: "/forecast" },
   { label: "Reports", icon: FileSpreadsheet, href: "/reports" },
+  { label: "Case study", icon: BriefcaseBusiness, href: "/portfolio" },
 ];
 
 export function Sidebar({ activeLabel = "Overview", reorderCount = 0 }: { activeLabel?: string; reorderCount?: number }) {

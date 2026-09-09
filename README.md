@@ -29,6 +29,7 @@ Cafe Stock Manage is a cafe inventory operations system built around an immutabl
 - Formula-driven Excel operations report with nine filtered worksheets
 - Vercel Services configuration for the Next.js and FastAPI applications
 - PostgreSQL-backed GitHub Actions verification pipeline
+- In-application portfolio case study with verified product screens
 
 The agreed operational data-model steps are implemented through `pos_sales`. Synthetic generation covers the clean operational flow and a separately generated error scenario with short deliveries, missing items, wrong products and stocktake corrections. Actual menu names, selling prices and recipe quantities remain TBD and are not included as production seed data.
 
@@ -134,4 +135,4 @@ Open `http://127.0.0.1:3000` to view live inventory balances, reorder alerts, re
 
 ## Design notes
 
-See [Inventory ledger and stocktake design](docs/inventory-ledger.md) for movement and reconciliation rules, [Menu Recipe and POS Usage Design](docs/menu-recipe-pos.md) for recipe conversion, [POS Usage Operations](docs/pos-usage-operations.md) for validated imports, [Demand Forecast](docs/demand-forecast.md) for the baseline model, [Excel Operations Report](docs/excel-report.md) for the workbook structure, [Deployment](docs/deployment.md) for the Vercel Services and PostgreSQL setup, [Synthetic Data Generation](docs/synthetic-data.md) for the configurable prototype, [PostgreSQL Dataset Import](docs/database-import.md) for loading and quality checks, [Reorder Planning](docs/reorder-planning.md) for replenishment calculations, and [Operations API](docs/api.md) for the HTTP contract.
+See [Inventory ledger and stocktake design](docs/inventory-ledger.md) for movement and reconciliation rules, [Menu Recipe and POS Usage Design](docs/menu-recipe-pos.md) for recipe conversion, [POS Usage Operations](docs/pos-usage-operations.md) for validated imports, [Demand Forecast](docs/demand-forecast.md) for the baseline model, [Excel Operations Report](docs/excel-report.md) for the workbook structure, [Deployment](docs/deployment.md) for the Vercel Services and PostgreSQL setup, [Portfolio Case Study](docs/portfolio-case-study.md) for the project narrative and architecture, [Synthetic Data Generation](docs/synthetic-data.md) for the configurable prototype, [PostgreSQL Dataset Import](docs/database-import.md) for loading and quality checks, [Reorder Planning](docs/reorder-planning.md) for replenishment calculations, and [Operations API](docs/api.md) for the HTTP contract.
