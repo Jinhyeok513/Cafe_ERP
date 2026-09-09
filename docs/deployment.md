@@ -24,3 +24,13 @@ Do not commit database credentials. Provision PostgreSQL through a Vercel Market
 5. Deploy and verify `/backend/api/health`, `/`, `/reorder`, `/pos-usage`, `/forecast` and `/reports`.
 
 The GitHub Actions workflow runs the same database and application checks on every push and pull request. Vercel Git integration can create preview deployments from pull requests and production deployments from `main` after the project is linked.
+
+## Provisioned production resources
+
+- Vercel project: `cafe-erp` on the T_AIM Hobby team
+- Database: Neon Free in Sydney (`syd1`)
+- Database environments: Production and Preview
+- Runtime variable: `DATABASE_URL`
+- Neon Auth: disabled because application authentication is outside this prototype's scope
+
+The database resource is intentionally separate from the repository. Its credentials remain in Vercel-managed environment variables and are never committed.
