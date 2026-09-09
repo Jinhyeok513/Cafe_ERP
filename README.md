@@ -22,6 +22,7 @@ Cafe Stock Manage is a cafe inventory operations system built around an immutabl
 - Transactional PostgreSQL dataset loader with checksum verification
 - Inventory timeline, stock status, discrepancy and stocktake quality views
 - Read-only FastAPI for inventory, movement, discrepancy and stocktake data
+- Responsive Next.js operations dashboard backed by the live API
 
 The agreed operational data-model steps are implemented through `pos_sales`. Synthetic generation covers the clean operational flow and a separately generated error scenario with short deliveries, missing items, wrong products and stocktake corrections. Actual menu names, selling prices and recipe quantities remain TBD and are not included as production seed data.
 
@@ -109,6 +110,18 @@ DATABASE_URL=postgresql://localhost/cafe_stock_manage_dev \
 ```
 
 The service exposes interactive OpenAPI documentation at `http://127.0.0.1:8000/docs`. Operational endpoints are under `/api`, including current inventory, product movements, receiving discrepancies, stocktake accuracy and dashboard KPIs.
+
+## Operations dashboard
+
+Install and run the Next.js dashboard in a second terminal after the API is available:
+
+```bash
+cd apps/web
+pnpm install
+CAFE_API_URL=http://127.0.0.1:8000 pnpm dev
+```
+
+Open `http://127.0.0.1:3000` to view live inventory balances, reorder alerts, receiving exceptions and stocktake accuracy. The dashboard performs server-side API requests and does not expose database credentials to the browser.
 
 ## Design notes
 
