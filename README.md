@@ -18,8 +18,9 @@ Cafe Stock Manage is a cafe inventory operations system built around an immutabl
 - Deterministic synthetic calendar, revenue, POS and ingredient-usage generator
 - Configurable demo assumptions with seed and output manifest
 - Consumption-driven orders, scheduled receipts, waste and daily stocktakes
+- Separate deterministic error scenario for receiving and stocktake reconciliation
 
-The agreed operational data-model steps are implemented through `pos_sales`. Synthetic generation now covers the clean operational flow from calendar and revenue through menu sales, ingredient usage, purchase orders, receipts, waste and daily stocktakes. The next stage is intentional error injection for short deliveries, missing items, wrong products and reconciliation exercises. Actual menu names, selling prices and recipe quantities remain TBD and are not included as production seed data.
+The agreed operational data-model steps are implemented through `pos_sales`. Synthetic generation covers the clean operational flow and a separately generated error scenario with short deliveries, missing items, wrong products and stocktake corrections. Actual menu names, selling prices and recipe quantities remain TBD and are not included as production seed data.
 
 ## Inventory unit model
 
@@ -58,7 +59,17 @@ The prototype assumptions are explicitly synthetic and configurable. Generate th
 ```bash
 PYTHONPATH=src python3 -m cafe_stock_manage.synthetic \
   --config config/prototype_assumptions.json \
+  --scenario clean \
   --output data/generated/prototype
+```
+
+Generate the matching operational-error dataset with:
+
+```bash
+PYTHONPATH=src python3 -m cafe_stock_manage.synthetic \
+  --config config/prototype_assumptions.json \
+  --scenario errors \
+  --output data/generated/prototype-errors
 ```
 
 Run the generator unit tests with:

@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import sys
 import unittest
+from collections import Counter
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
@@ -141,6 +142,109 @@ class SyntheticGenerationTests(unittest.TestCase):
                 * Decimal(str(products[receipt_item["product_id"]]["pack_size"]))
             )
             self.assertEqual(Decimal(movement["quantity_change"]), expected)
+
+    def test_error_scenario_is_reproducible(self) -> None:
+        first = generate_dataset(self.config, scenario="errors")
+        second = generate_dataset(self.config, scenario="errors")
+
+        self.assertEqual(first, second)
+        self.assertEqual(dataset_hash(first), dataset_hash(second))
+
+    def test_receipt_errors_post_only_accepted_quantity(self) -> None:
+        dataset = generate_dataset(self.config, scenario="errors")
+        products = {item["product_id"]: item for item in self.config["products"]}
+        receipt_movements = {
+            row["source_id"]: row
+            for row in dataset["inventory_movements"]
+            if row["source_type"] == "GOODS_RECEIPT"
+        }
+        discrepancies = [
+            item
+            for item in dataset["goods_receipt_items"]
+            if item["discrepancy_reason"] != "NONE"
+        ]
+
+        self.assertEqual(
+            Counter(item["discrepancy_reason"] for item in discrepancies),
+            Counter({"SHORT_DELIVERY": 3, "MISSING_ITEM": 2, "WRONG_PRODUCT": 1}),
+        )
+        self.assertTrue(all(Decimal(item["damaged_quantity"]) == 0 for item in discrepancies))
+
+        for item in dataset["goods_receipt_items"]:
+            accepted = Decimal(item["accepted_quantity"])
+            movement = receipt_movements.get(item["receipt_item_source_key"])
+            if accepted == 0:
+                self.assertIsNone(movement)
+                continue
+            expected = accepted * Decimal(str(products[item["product_id"]]["pack_size"]))
+            self.assertIsNotNone(movement)
+            self.assertEqual(Decimal(movement["quantity_change"]), expected)
+
+        discrepancy_receipts = {item["receipt_source_key"] for item in discrepancies}
+        discrepancy_po_keys = {
+            receipt["po_source_key"]
+            for receipt in dataset["goods_receipts"]
+            if receipt["receipt_source_key"] in discrepancy_receipts
+        }
+        order_status = {
+            order["po_source_key"]: order["order_status"]
+            for order in dataset["purchase_orders"]
+        }
+        self.assertTrue(
+            all(order_status[key] == "PARTIALLY_RECEIVED" for key in discrepancy_po_keys)
+        )
+
+    def test_stocktake_variance_creates_new_adjustment(self) -> None:
+        dataset = generate_dataset(self.config, scenario="errors")
+        variance_items = [
+            item for item in dataset["stocktake_items"] if Decimal(item["variance"]) != 0
+        ]
+        adjustments = {
+            row["source_id"]: row
+            for row in dataset["inventory_movements"]
+            if row["source_type"] == "STOCKTAKE"
+        }
+
+        self.assertEqual(len(variance_items), 3)
+        self.assertEqual(len(dataset["scenario_events"]), 9)
+        for item in variance_items:
+            adjustment = adjustments[item["stocktake_item_source_key"]]
+            self.assertEqual(adjustment["movement_type"], "ADJUSTMENT")
+            self.assertEqual(adjustment["reason_code"], "STOCKTAKE_CORRECTION")
+            self.assertEqual(Decimal(adjustment["quantity_change"]), Decimal(item["variance"]))
+            self.assertEqual(item["review_status"], "ADJUSTED")
+            self.assertGreaterEqual(Decimal(item["physical_quantity"]), 0)
+
+    def test_stocktake_system_quantity_matches_ledger(self) -> None:
+        for scenario in ("clean", "errors"):
+            dataset = generate_dataset(self.config, scenario=scenario)
+            stocktake_datetimes = {
+                row["stocktake_source_key"]: row["stocktake_datetime"]
+                for row in dataset["stocktakes"]
+            }
+            movements_by_product: dict[str, list[dict[str, object]]] = {}
+            for movement in dataset["inventory_movements"]:
+                movements_by_product.setdefault(movement["product_id"], []).append(movement)
+
+            for item in dataset["stocktake_items"]:
+                stocktake_datetime = stocktake_datetimes[item["stocktake_source_key"]]
+                ledger_quantity = sum(
+                    (
+                        Decimal(movement["quantity_change"])
+                        for movement in movements_by_product[item["product_id"]]
+                        if movement["movement_datetime"] < stocktake_datetime
+                    ),
+                    Decimal(0),
+                )
+                self.assertEqual(
+                    Decimal(item["system_quantity"]),
+                    ledger_quantity,
+                    f"{scenario}: {item['stocktake_item_source_key']}",
+                )
+
+    def test_unknown_scenario_is_rejected(self) -> None:
+        with self.assertRaisesRegex(ValueError, "Unknown generation scenario"):
+            generate_dataset(self.config, scenario="surprise")
 
 
 if __name__ == "__main__":

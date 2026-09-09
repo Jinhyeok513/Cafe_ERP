@@ -120,6 +120,46 @@ def validate_config(config: dict[str, Any]) -> None:
         if not probabilities or sum(decimal_value(v) for v in probabilities.values()) <= 0:
             raise ValueError(f"Weather probabilities are invalid for {season}")
 
+    error_config = config.get("error_injection", {})
+    receipt_rule_keys: set[tuple[str, int]] = set()
+    supported_receipt_reasons = {"SHORT_DELIVERY", "MISSING_ITEM", "WRONG_PRODUCT"}
+    for rule in error_config.get("receipt_discrepancies", []):
+        product_id = rule.get("product_id")
+        occurrence = int(rule.get("occurrence", 0))
+        reason = rule.get("reason")
+        if product_id not in products:
+            raise ValueError(f"Unknown receipt discrepancy product: {product_id}")
+        if occurrence <= 0:
+            raise ValueError("Receipt discrepancy occurrence must be positive")
+        if reason not in supported_receipt_reasons:
+            raise ValueError(f"Unsupported receipt discrepancy reason: {reason}")
+        rule_key = (product_id, occurrence)
+        if rule_key in receipt_rule_keys:
+            raise ValueError(f"Duplicate receipt discrepancy rule: {rule_key}")
+        receipt_rule_keys.add(rule_key)
+        if reason == "SHORT_DELIVERY":
+            if decimal_value(rule.get("short_by_order_units", 0)) <= 0:
+                raise ValueError("SHORT_DELIVERY requires positive short_by_order_units")
+        elif "short_by_order_units" in rule:
+            raise ValueError(f"{reason} must not set short_by_order_units")
+
+    stocktake_rule_keys: set[tuple[str, str]] = set()
+    start_date = parse_date(date_range["start_date"])
+    end_date = start_date + timedelta(days=int(date_range["days"]) - 1)
+    for rule in error_config.get("stocktake_variances", []):
+        product_id = rule.get("product_id")
+        rule_date = parse_date(rule["date"])
+        if product_id not in products:
+            raise ValueError(f"Unknown stocktake variance product: {product_id}")
+        if not start_date <= rule_date <= end_date:
+            raise ValueError(f"Stocktake variance date is outside generation range: {rule_date}")
+        if decimal_value(rule.get("variance_inventory_qty", 0)) == 0:
+            raise ValueError("Stocktake variance must be non-zero")
+        rule_key = (rule["date"], product_id)
+        if rule_key in stocktake_rule_keys:
+            raise ValueError(f"Duplicate stocktake variance rule: {rule_key}")
+        stocktake_rule_keys.add(rule_key)
+
 
 def season_for_day(day: date) -> str:
     if day.month in (12, 1, 2):
@@ -344,8 +384,13 @@ def derive_inventory_usage(
     return usage_rows
 
 
-def generate_dataset(config: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
+def generate_dataset(
+    config: dict[str, Any],
+    scenario: str = "clean",
+) -> dict[str, list[dict[str, Any]]]:
     validate_config(config)
+    if scenario not in {"clean", "errors"}:
+        raise ValueError(f"Unknown generation scenario: {scenario}")
     rng = random.Random(int(config["metadata"]["random_seed"]))
     calendar_rows = build_calendar(config, rng)
     pos_rows: list[dict[str, Any]] = []
@@ -394,7 +439,16 @@ def generate_dataset(config: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
     }
     from .operations import simulate_operations
 
-    dataset.update(simulate_operations(config, calendar_rows, pos_rows, usage_rows, rng))
+    dataset.update(
+        simulate_operations(
+            config,
+            calendar_rows,
+            pos_rows,
+            usage_rows,
+            rng,
+            scenario=scenario,
+        )
+    )
     return dataset
 
 
@@ -407,6 +461,7 @@ def write_dataset(
     dataset: dict[str, list[dict[str, Any]]],
     config: dict[str, Any],
     output_dir: str | Path,
+    scenario: str = "clean",
 ) -> None:
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
@@ -429,6 +484,7 @@ def write_dataset(
         "project": "Cafe_Stock_manage",
         "assumption_status": config["metadata"]["assumption_status"],
         "random_seed": config["metadata"]["random_seed"],
+        "scenario": scenario,
         "start_date": config["date_range"]["start_date"],
         "days": config["date_range"]["days"],
         "dataset_sha256": dataset_hash(dataset),
@@ -443,13 +499,19 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", required=True, help="Path to synthetic assumption JSON")
     parser.add_argument("--output", required=True, help="Directory for generated CSV files")
+    parser.add_argument(
+        "--scenario",
+        choices=("clean", "errors"),
+        default="clean",
+        help="Generate the clean baseline or configured operational errors",
+    )
     args = parser.parse_args()
 
     config = load_config(args.config)
-    dataset = generate_dataset(config)
-    write_dataset(dataset, config, args.output)
+    dataset = generate_dataset(config, scenario=args.scenario)
+    write_dataset(dataset, config, args.output, scenario=args.scenario)
     print(
-        f"Generated {len(dataset['calendar'])} days, "
+        f"Generated {args.scenario} scenario with {len(dataset['calendar'])} days, "
         f"{len(dataset['pos_sales'])} POS rows and "
         f"{len(dataset['inventory_usage'])} usage rows, "
         f"{len(dataset['purchase_orders'])} orders and "

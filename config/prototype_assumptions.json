@@ -413,5 +413,59 @@
       "ingredient_quantity": 0.25,
       "ingredient_unit": "litre"
     }
-  ]
+  ],
+  "error_injection": {
+    "receipt_discrepancies": [
+      {
+        "reason": "SHORT_DELIVERY",
+        "product_id": "MILK_OAT",
+        "occurrence": 3,
+        "short_by_order_units": 2
+      },
+      {
+        "reason": "SHORT_DELIVERY",
+        "product_id": "MILK_FULL",
+        "occurrence": 5,
+        "short_by_order_units": 3
+      },
+      {
+        "reason": "SHORT_DELIVERY",
+        "product_id": "EGGS",
+        "occurrence": 2,
+        "short_by_order_units": 1
+      },
+      {
+        "reason": "MISSING_ITEM",
+        "product_id": "CROISSANT",
+        "occurrence": 7
+      },
+      {
+        "reason": "MISSING_ITEM",
+        "product_id": "MILK_FULL",
+        "occurrence": 7
+      },
+      {
+        "reason": "WRONG_PRODUCT",
+        "product_id": "MILK_FULL",
+        "occurrence": 14
+      }
+    ],
+    "stocktake_variances": [
+      {
+        "date": "2024-04-12",
+        "product_id": "MILK_OAT",
+        "variance_inventory_qty": -0.5
+      },
+      {
+        "date": "2024-04-20",
+        "product_id": "EGGS",
+        "variance_inventory_qty": -3
+      },
+      {
+        "date": "2024-04-25",
+        "product_id": "COFFEE_REGULAR",
+        "variance_inventory_qty": 0.2
+      }
+    ]
+  }
 }

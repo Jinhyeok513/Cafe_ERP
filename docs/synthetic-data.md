@@ -20,6 +20,7 @@ The committed configuration generates 30 days beginning on 1 April 2024. It incl
 - Receipts scheduled only on supplier delivery days
 - Normal waste movements
 - Daily clean stocktakes that reconcile to the inventory ledger
+- An optional, separately generated operational-error scenario
 
 Public holiday dates are intentionally empty until a real calendar source is selected. The university-break period in the prototype is explicitly labelled as a demo assumption.
 
@@ -50,12 +51,37 @@ Running the generator produces:
 - `inventory_movements.csv`
 - `stocktakes.csv`
 - `stocktake_items.csv`
+- `scenario_events.csv` in the error scenario
 - `manifest.json`
 
-The manifest records the random seed, date range, row counts and a deterministic SHA-256 hash of the generated records.
+The manifest records the scenario, random seed, date range, row counts and a deterministic SHA-256 hash of the generated records.
 
-## Current boundary
+## Scenarios
 
-This stage generates a clean operational history from calendar and sales through ordering, receiving, inventory movements and daily stocktakes. Purchase quantities respond to consumption, current stock, safety stock, pack size and the next supplier delivery gap. Bread and milk have no Sunday receipts, and Supplier C uses the configured Monday, Wednesday and Saturday schedule.
+The `clean` scenario generates an operational history from calendar and sales through ordering, receiving, inventory movements and daily stocktakes. Purchase quantities respond to consumption, current stock, safety stock, pack size and the next supplier delivery gap. Bread and milk have no Sunday receipts, and Supplier C uses the configured Monday, Wednesday and Saturday schedule.
 
-Intentional short deliveries, missing items, wrong products, delayed waste records and stocktake variance are not included in the clean baseline. They belong to the next error-injection stage so clean and faulty datasets remain separately testable.
+The `errors` scenario uses the same demand assumptions but applies the explicit rules in `error_injection`. The committed rules produce three short deliveries, two missing items, one wrong product and three stocktake variances. Damaged quantity remains zero. A short delivery posts only accepted stock; a missing or wrong item creates no RECEIVE movement for the ordered product.
+
+Stocktake corrections follow the immutable-ledger rule:
+
+```text
+variance = physical_quantity - system_quantity
+ADJUSTMENT quantity_change = variance
+reason_code = STOCKTAKE_CORRECTION
+```
+
+Run both scenarios separately:
+
+```bash
+PYTHONPATH=src python3 -m cafe_stock_manage.synthetic \
+  --config config/prototype_assumptions.json \
+  --scenario clean \
+  --output data/generated/prototype
+
+PYTHONPATH=src python3 -m cafe_stock_manage.synthetic \
+  --config config/prototype_assumptions.json \
+  --scenario errors \
+  --output data/generated/prototype-errors
+```
+
+`scenario_events.csv` is a compact audit list of every injected error and its resolution. The full goods receipt, movement and stocktake files remain the source of truth for balance calculations.

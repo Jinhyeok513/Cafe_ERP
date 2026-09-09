@@ -1,6 +1,6 @@
 {
   "assumption_status": "synthetic_demo",
-  "dataset_sha256": "a67ee2d97a895e6152e8a1411bbce841f4886e9eee3255ab35887c720d64caa5",
+  "dataset_sha256": "4bdea7f61b6aa79cfce44f49fb2273c6edda72e31421e46d487463265ad89fe4",
   "days": 30,
   "project": "Cafe_Stock_manage",
   "random_seed": 513,
@@ -16,9 +16,10 @@
     "purchase_order_items": 98,
     "purchase_orders": 72,
     "recipes": 11,
+    "scenario_events": 9,
     "stocktake_items": 270,
     "stocktakes": 30
   },
-  "scenario": "clean",
+  "scenario": "errors",
   "start_date": "2024-04-01"
 }
