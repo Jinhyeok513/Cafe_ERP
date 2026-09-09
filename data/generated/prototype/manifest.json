@@ -1,0 +1,23 @@
+{
+  "assumption_status": "synthetic_demo",
+  "dataset_sha256": "a67ee2d97a895e6152e8a1411bbce841f4886e9eee3255ab35887c720d64caa5",
+  "days": 30,
+  "project": "Cafe_Stock_manage",
+  "random_seed": 513,
+  "row_counts": {
+    "calendar": 30,
+    "daily_summary": 30,
+    "goods_receipt_items": 93,
+    "goods_receipts": 68,
+    "inventory_movements": 552,
+    "inventory_usage": 330,
+    "menu_items": 8,
+    "pos_sales": 240,
+    "purchase_order_items": 98,
+    "purchase_orders": 72,
+    "recipes": 11,
+    "stocktake_items": 270,
+    "stocktakes": 30
+  },
+  "start_date": "2024-04-01"
+}

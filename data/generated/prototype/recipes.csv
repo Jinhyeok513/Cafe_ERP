@@ -1,0 +1,12 @@
+menu_item_id,product_id,ingredient_quantity,ingredient_unit,assumption_status
+DEMO_FLAT_WHITE,MILK_FULL,0.180000,litre,synthetic_demo
+DEMO_FLAT_WHITE,COFFEE_REGULAR,0.018000,kilogram,synthetic_demo
+DEMO_OAT_LATTE,MILK_OAT,0.250000,litre,synthetic_demo
+DEMO_OAT_LATTE,COFFEE_REGULAR,0.018000,kilogram,synthetic_demo
+DEMO_ICED_LATTE,MILK_FULL,0.250000,litre,synthetic_demo
+DEMO_ICED_LATTE,COFFEE_REGULAR,0.018000,kilogram,synthetic_demo
+DEMO_SMOOTHIE,MILK_OAT,0.200000,litre,synthetic_demo
+DEMO_CROISSANT,CROISSANT,1.000000,each,synthetic_demo
+DEMO_EGG_BREAKFAST,EGGS,2.000000,each,synthetic_demo
+DEMO_EGG_SANDWICH,EGGS,1.000000,each,synthetic_demo
+DEMO_HOT_CHOCOLATE,MILK_FULL,0.250000,litre,synthetic_demo

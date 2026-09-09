@@ -15,8 +15,11 @@ Cafe Stock Manage is a cafe inventory operations system built around an immutabl
 - Menu Item and Recipe/BOM tables with unit validation
 - Daily POS sales and recipe-derived inventory usage posting
 - Protection against duplicate posting and edits to posted sales
+- Deterministic synthetic calendar, revenue, POS and ingredient-usage generator
+- Configurable demo assumptions with seed and output manifest
+- Consumption-driven orders, scheduled receipts, waste and daily stocktakes
 
-The agreed operational data-model steps are now implemented through `pos_sales`. The next project stage is synthetic data generation. Actual menu names, selling prices and recipe quantities remain TBD and are not included as production seed data.
+The agreed operational data-model steps are implemented through `pos_sales`. Synthetic generation now covers the clean operational flow from calendar and revenue through menu sales, ingredient usage, purchase orders, receipts, waste and daily stocktakes. The next stage is intentional error injection for short deliveries, missing items, wrong products and reconciliation exercises. Actual menu names, selling prices and recipe quantities remain TBD and are not included as production seed data.
 
 ## Inventory unit model
 
@@ -48,6 +51,22 @@ psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/tests/002_recipe_pos_usag
 
 The test runs inside a transaction and rolls back its test records.
 
+## Synthetic prototype
+
+The prototype assumptions are explicitly synthetic and configurable. Generate the committed 30-day dataset with:
+
+```bash
+PYTHONPATH=src python3 -m cafe_stock_manage.synthetic \
+  --config config/prototype_assumptions.json \
+  --output data/generated/prototype
+```
+
+Run the generator unit tests with:
+
+```bash
+PYTHONPATH=src python3 -m unittest discover -s tests -v
+```
+
 ## Design notes
 
-See [Inventory ledger and stocktake design](docs/inventory-ledger.md) for movement and reconciliation rules, and [Menu Recipe and POS Usage Design](docs/menu-recipe-pos.md) for recipe conversion and POS posting.
+See [Inventory ledger and stocktake design](docs/inventory-ledger.md) for movement and reconciliation rules, [Menu Recipe and POS Usage Design](docs/menu-recipe-pos.md) for recipe conversion and POS posting, and [Synthetic Data Generation](docs/synthetic-data.md) for the configurable prototype.

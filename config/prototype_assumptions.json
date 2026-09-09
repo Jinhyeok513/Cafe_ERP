@@ -1,0 +1,417 @@
+{
+  "metadata": {
+    "project": "Cafe_Stock_manage",
+    "assumption_status": "synthetic_demo",
+    "random_seed": 513,
+    "currency": "AUD",
+    "timezone": "Australia/Sydney",
+    "notes": "All menu names, prices, mix weights and recipe quantities in this file are configurable prototype assumptions, not real cafe records."
+  },
+  "date_range": {
+    "start_date": "2024-04-01",
+    "days": 30
+  },
+  "calendar": {
+    "public_holidays": [],
+    "university_breaks": [
+      {
+        "label": "DEMO_UNIVERSITY_BREAK_ASSUMPTION",
+        "start_date": "2024-04-08",
+        "end_date": "2024-04-14"
+      }
+    ]
+  },
+  "suppliers": [
+    {
+      "supplier_id": "SUP_A",
+      "lead_time_days": 1,
+      "delivery_weekdays": [0, 1, 2, 3, 4, 5]
+    },
+    {
+      "supplier_id": "SUP_B",
+      "lead_time_days": 1,
+      "delivery_weekdays": [0, 1, 2, 3, 4, 5]
+    },
+    {
+      "supplier_id": "SUP_C",
+      "lead_time_days": 1,
+      "delivery_weekdays": [0, 2, 5]
+    },
+    {
+      "supplier_id": "SUP_D",
+      "lead_time_days": 1,
+      "delivery_weekdays": [0, 1, 2, 3, 4, 5]
+    }
+  ],
+  "revenue": {
+    "anchors": [
+      {
+        "date": "2024-04-01",
+        "daily_revenue": 1650
+      },
+      {
+        "date": "2026-12-31",
+        "daily_revenue": 3750
+      }
+    ],
+    "day_type_multipliers": {
+      "weekday": 1.0,
+      "weekend": 1.12
+    },
+    "weather_multipliers": {
+      "hot": 1.04,
+      "sunny": 1.03,
+      "mild": 1.0,
+      "cloudy": 0.97,
+      "cold": 0.98,
+      "rainy": 0.9
+    },
+    "university_break_multiplier": 0.94,
+    "public_holiday_multiplier": 0.9,
+    "daily_noise_standard_deviation": 0.08,
+    "minimum_noise_multiplier": 0.75,
+    "maximum_noise_multiplier": 1.25
+  },
+  "weather": {
+    "probabilities": {
+      "summer": {
+        "hot": 0.4,
+        "sunny": 0.35,
+        "cloudy": 0.15,
+        "rainy": 0.1
+      },
+      "autumn": {
+        "sunny": 0.3,
+        "mild": 0.35,
+        "cloudy": 0.2,
+        "rainy": 0.15
+      },
+      "winter": {
+        "cold": 0.4,
+        "sunny": 0.2,
+        "cloudy": 0.2,
+        "rainy": 0.2
+      },
+      "spring": {
+        "sunny": 0.35,
+        "mild": 0.35,
+        "cloudy": 0.15,
+        "rainy": 0.15
+      }
+    }
+  },
+  "mix": {
+    "day_type_category_multipliers": {
+      "weekday": {
+        "HOT_COFFEE": 1.2,
+        "COLD_BEVERAGE": 1.1,
+        "SMOOTHIE": 1.1,
+        "SANDWICH": 1.1,
+        "BAKERY": 0.95,
+        "BRUNCH": 0.75
+      },
+      "weekend": {
+        "HOT_COFFEE": 0.95,
+        "COLD_BEVERAGE": 0.9,
+        "SMOOTHIE": 0.9,
+        "SANDWICH": 0.9,
+        "BAKERY": 1.2,
+        "BRUNCH": 1.65
+      }
+    },
+    "season_category_multipliers": {
+      "summer": {
+        "HOT_COFFEE": 0.75,
+        "HOT_BEVERAGE": 0.7,
+        "COLD_BEVERAGE": 1.5,
+        "SMOOTHIE": 1.45
+      },
+      "autumn": {},
+      "winter": {
+        "HOT_COFFEE": 1.4,
+        "HOT_BEVERAGE": 1.35,
+        "COLD_BEVERAGE": 0.65,
+        "SMOOTHIE": 0.7
+      },
+      "spring": {
+        "COLD_BEVERAGE": 1.1,
+        "SMOOTHIE": 1.1
+      }
+    },
+    "weather_category_multipliers": {
+      "hot": {
+        "HOT_COFFEE": 0.75,
+        "HOT_BEVERAGE": 0.7,
+        "COLD_BEVERAGE": 1.55,
+        "SMOOTHIE": 1.5
+      },
+      "sunny": {
+        "COLD_BEVERAGE": 1.15,
+        "BRUNCH": 1.1
+      },
+      "mild": {},
+      "cloudy": {},
+      "cold": {
+        "HOT_COFFEE": 1.35,
+        "HOT_BEVERAGE": 1.35,
+        "COLD_BEVERAGE": 0.7,
+        "SMOOTHIE": 0.75
+      },
+      "rainy": {
+        "HOT_COFFEE": 1.15,
+        "HOT_BEVERAGE": 1.15,
+        "BRUNCH": 0.8
+      }
+    }
+  },
+  "products": [
+    {
+      "product_id": "MILK_FULL",
+      "inventory_unit": "bottle",
+      "order_unit": "bottle",
+      "pack_size": 1,
+      "content_quantity_per_inventory_unit": 1.5,
+      "content_unit": "litre",
+      "supplier_id": "SUP_B",
+      "opening_inventory_qty": 30,
+      "typical_order_qty": 15,
+      "reorder_point_inventory_qty": 8,
+      "safety_stock_inventory_qty": 5,
+      "waste_rate_of_usage": 0.01
+    },
+    {
+      "product_id": "MILK_SKIM",
+      "inventory_unit": "bottle",
+      "order_unit": "bottle",
+      "pack_size": 1,
+      "content_quantity_per_inventory_unit": 1.5,
+      "content_unit": "litre",
+      "supplier_id": "SUP_B",
+      "opening_inventory_qty": 6,
+      "typical_order_qty": 3,
+      "reorder_point_inventory_qty": 2,
+      "safety_stock_inventory_qty": 1,
+      "waste_rate_of_usage": 0
+    },
+    {
+      "product_id": "MILK_ALMOND",
+      "inventory_unit": "carton",
+      "order_unit": "carton",
+      "pack_size": 1,
+      "content_quantity_per_inventory_unit": 1,
+      "content_unit": "litre",
+      "supplier_id": "SUP_B",
+      "opening_inventory_qty": 8,
+      "typical_order_qty": 8,
+      "reorder_point_inventory_qty": 3,
+      "safety_stock_inventory_qty": 2,
+      "waste_rate_of_usage": 0
+    },
+    {
+      "product_id": "MILK_OAT",
+      "inventory_unit": "carton",
+      "order_unit": "carton",
+      "pack_size": 1,
+      "content_quantity_per_inventory_unit": 1,
+      "content_unit": "litre",
+      "supplier_id": "SUP_B",
+      "opening_inventory_qty": 16,
+      "typical_order_qty": 8,
+      "reorder_point_inventory_qty": 3,
+      "safety_stock_inventory_qty": 3,
+      "waste_rate_of_usage": 0.01
+    },
+    {
+      "product_id": "MILK_SOY",
+      "inventory_unit": "carton",
+      "order_unit": "carton",
+      "pack_size": 1,
+      "content_quantity_per_inventory_unit": 1,
+      "content_unit": "litre",
+      "supplier_id": "SUP_B",
+      "opening_inventory_qty": 8,
+      "typical_order_qty": 8,
+      "reorder_point_inventory_qty": 3,
+      "safety_stock_inventory_qty": 2,
+      "waste_rate_of_usage": 0
+    },
+    {
+      "product_id": "MILK_LACTOSE_FREE",
+      "inventory_unit": "carton",
+      "order_unit": "carton",
+      "pack_size": 1,
+      "content_quantity_per_inventory_unit": 1,
+      "content_unit": "litre",
+      "supplier_id": "SUP_B",
+      "opening_inventory_qty": 8,
+      "typical_order_qty": 8,
+      "reorder_point_inventory_qty": 2,
+      "safety_stock_inventory_qty": 1,
+      "waste_rate_of_usage": 0
+    },
+    {
+      "product_id": "COFFEE_REGULAR",
+      "inventory_unit": "bag",
+      "order_unit": "bag",
+      "pack_size": 1,
+      "content_quantity_per_inventory_unit": 1,
+      "content_unit": "kilogram",
+      "supplier_id": "SUP_D",
+      "opening_inventory_qty": 8,
+      "typical_order_qty": 8,
+      "reorder_point_inventory_qty": 2,
+      "safety_stock_inventory_qty": 1,
+      "waste_rate_of_usage": 0.005
+    },
+    {
+      "product_id": "CROISSANT",
+      "inventory_unit": "each",
+      "order_unit": "each",
+      "pack_size": 1,
+      "supplier_id": "SUP_A",
+      "opening_inventory_qty": 40,
+      "typical_order_qty": 20,
+      "reorder_point_inventory_qty": 10,
+      "safety_stock_inventory_qty": 5,
+      "waste_rate_of_usage": 0.04
+    },
+    {
+      "product_id": "EGGS",
+      "inventory_unit": "each",
+      "order_unit": "tray",
+      "pack_size": 25,
+      "supplier_id": "SUP_C",
+      "opening_inventory_qty": 225,
+      "typical_order_qty": 9,
+      "reorder_point_inventory_qty": 50,
+      "safety_stock_inventory_qty": 25,
+      "waste_rate_of_usage": 0.01
+    }
+  ],
+  "menu_items": [
+    {
+      "menu_item_id": "DEMO_FLAT_WHITE",
+      "menu_item_name": "Demo Flat White",
+      "category": "HOT_COFFEE",
+      "selling_price": 5.5,
+      "base_mix_weight": 1.4
+    },
+    {
+      "menu_item_id": "DEMO_OAT_LATTE",
+      "menu_item_name": "Demo Oat Latte",
+      "category": "HOT_COFFEE",
+      "selling_price": 6.2,
+      "base_mix_weight": 0.8
+    },
+    {
+      "menu_item_id": "DEMO_ICED_LATTE",
+      "menu_item_name": "Demo Iced Latte",
+      "category": "COLD_BEVERAGE",
+      "selling_price": 6.5,
+      "base_mix_weight": 0.65
+    },
+    {
+      "menu_item_id": "DEMO_SMOOTHIE",
+      "menu_item_name": "Demo Smoothie",
+      "category": "SMOOTHIE",
+      "selling_price": 8.5,
+      "base_mix_weight": 0.45
+    },
+    {
+      "menu_item_id": "DEMO_CROISSANT",
+      "menu_item_name": "Demo Croissant",
+      "category": "BAKERY",
+      "selling_price": 6.0,
+      "base_mix_weight": 0.75
+    },
+    {
+      "menu_item_id": "DEMO_EGG_BREAKFAST",
+      "menu_item_name": "Demo Egg Breakfast",
+      "category": "BRUNCH",
+      "selling_price": 22.0,
+      "base_mix_weight": 0.55
+    },
+    {
+      "menu_item_id": "DEMO_EGG_SANDWICH",
+      "menu_item_name": "Demo Egg Sandwich",
+      "category": "SANDWICH",
+      "selling_price": 13.0,
+      "base_mix_weight": 0.65
+    },
+    {
+      "menu_item_id": "DEMO_HOT_CHOCOLATE",
+      "menu_item_name": "Demo Hot Chocolate",
+      "category": "HOT_BEVERAGE",
+      "selling_price": 6.0,
+      "base_mix_weight": 0.5
+    }
+  ],
+  "recipes": [
+    {
+      "menu_item_id": "DEMO_FLAT_WHITE",
+      "product_id": "MILK_FULL",
+      "ingredient_quantity": 0.18,
+      "ingredient_unit": "litre"
+    },
+    {
+      "menu_item_id": "DEMO_FLAT_WHITE",
+      "product_id": "COFFEE_REGULAR",
+      "ingredient_quantity": 0.018,
+      "ingredient_unit": "kilogram"
+    },
+    {
+      "menu_item_id": "DEMO_OAT_LATTE",
+      "product_id": "MILK_OAT",
+      "ingredient_quantity": 0.25,
+      "ingredient_unit": "litre"
+    },
+    {
+      "menu_item_id": "DEMO_OAT_LATTE",
+      "product_id": "COFFEE_REGULAR",
+      "ingredient_quantity": 0.018,
+      "ingredient_unit": "kilogram"
+    },
+    {
+      "menu_item_id": "DEMO_ICED_LATTE",
+      "product_id": "MILK_FULL",
+      "ingredient_quantity": 0.25,
+      "ingredient_unit": "litre"
+    },
+    {
+      "menu_item_id": "DEMO_ICED_LATTE",
+      "product_id": "COFFEE_REGULAR",
+      "ingredient_quantity": 0.018,
+      "ingredient_unit": "kilogram"
+    },
+    {
+      "menu_item_id": "DEMO_SMOOTHIE",
+      "product_id": "MILK_OAT",
+      "ingredient_quantity": 0.2,
+      "ingredient_unit": "litre"
+    },
+    {
+      "menu_item_id": "DEMO_CROISSANT",
+      "product_id": "CROISSANT",
+      "ingredient_quantity": 1,
+      "ingredient_unit": "each"
+    },
+    {
+      "menu_item_id": "DEMO_EGG_BREAKFAST",
+      "product_id": "EGGS",
+      "ingredient_quantity": 2,
+      "ingredient_unit": "each"
+    },
+    {
+      "menu_item_id": "DEMO_EGG_SANDWICH",
+      "product_id": "EGGS",
+      "ingredient_quantity": 1,
+      "ingredient_unit": "each"
+    },
+    {
+      "menu_item_id": "DEMO_HOT_CHOCOLATE",
+      "product_id": "MILK_FULL",
+      "ingredient_quantity": 0.25,
+      "ingredient_unit": "litre"
+    }
+  ]
+}

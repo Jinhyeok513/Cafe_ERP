@@ -1,0 +1,9 @@
+menu_item_id,menu_item_name,menu_category,selling_price,assumption_status
+DEMO_FLAT_WHITE,Demo Flat White,HOT_COFFEE,5.50,synthetic_demo
+DEMO_OAT_LATTE,Demo Oat Latte,HOT_COFFEE,6.20,synthetic_demo
+DEMO_ICED_LATTE,Demo Iced Latte,COLD_BEVERAGE,6.50,synthetic_demo
+DEMO_SMOOTHIE,Demo Smoothie,SMOOTHIE,8.50,synthetic_demo
+DEMO_CROISSANT,Demo Croissant,BAKERY,6.00,synthetic_demo
+DEMO_EGG_BREAKFAST,Demo Egg Breakfast,BRUNCH,22.00,synthetic_demo
+DEMO_EGG_SANDWICH,Demo Egg Sandwich,SANDWICH,13.00,synthetic_demo
+DEMO_HOT_CHOCOLATE,Demo Hot Chocolate,HOT_BEVERAGE,6.00,synthetic_demo

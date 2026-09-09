@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cafe-stock-manage"
+version = "0.1.0"
+description = "Cafe inventory operations and synthetic data tooling"
+requires-python = ">=3.11"
+
+[project.scripts]
+cafe-generate-prototype = "cafe_stock_manage.synthetic:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
