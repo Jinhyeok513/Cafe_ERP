@@ -1,0 +1,67 @@
+# Operations API
+
+## Purpose
+
+The read-only FastAPI service exposes the verified PostgreSQL inventory views to a future dashboard without duplicating stock calculations in the frontend. All quantities retain the Product Master inventory unit.
+
+## Setup
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -e '.[api,test]'
+```
+
+Set the PostgreSQL connection and start the service:
+
+```bash
+DATABASE_URL=postgresql://localhost/cafe_stock_manage_dev \
+DATABASE_POOL_MAX_SIZE=5 \
+API_HOST=127.0.0.1 \
+API_PORT=8000 \
+  .venv/bin/cafe-api
+```
+
+`DATABASE_URL` is required. Pool size defaults to 5, host to `127.0.0.1` and port to `8000`.
+
+## Endpoints
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/api/health` | Database connection and loaded scenario |
+| GET | `/api/kpis` | Dashboard-level inventory and quality metrics |
+| GET | `/api/inventory` | Current quantity and reorder status by product |
+| GET | `/api/inventory/{product_id}/movements` | Immutable product movement history |
+| GET | `/api/discrepancies` | Receiving discrepancy detail |
+| GET | `/api/stocktakes/accuracy` | Daily physical-count accuracy |
+
+Interactive OpenAPI documentation is available at `/docs`, with the raw schema at `/openapi.json`.
+
+## Filters
+
+`GET /api/inventory` supports `status`, `search`, `limit` and `offset`. Status is restricted to the values produced by `current_inventory_status`:
+
+```text
+NEGATIVE_STOCK
+REORDER_DUE
+IN_STOCK
+NO_REORDER_POINT
+```
+
+Movement history supports the four ledger movement types. Receiving discrepancies can be filtered by reason and supplier. Stocktake accuracy supports inclusive `date_from` and `date_to` values; an inverted range returns HTTP 422.
+
+All query values are passed to Psycopg as parameters. Only fixed internal SQL fragments are composed for optional filters.
+
+## Error behavior
+
+- Unknown product movement history returns HTTP 404.
+- Invalid enum, date or pagination input returns HTTP 422.
+- PostgreSQL driver errors return HTTP 503 without exposing database details.
+- A missing `DATABASE_URL` prevents application startup.
+
+## Test
+
+```bash
+.venv/bin/python -m unittest discover -s tests -v
+```
+
+API unit tests use an injected repository, so they do not require PostgreSQL. Integration verification should additionally start a migrated database, load a dataset and request each endpoint using the real connection pool.

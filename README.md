@@ -21,6 +21,7 @@ Cafe Stock Manage is a cafe inventory operations system built around an immutabl
 - Separate deterministic error scenario for receiving and stocktake reconciliation
 - Transactional PostgreSQL dataset loader with checksum verification
 - Inventory timeline, stock status, discrepancy and stocktake quality views
+- Read-only FastAPI for inventory, movement, discrepancy and stocktake data
 
 The agreed operational data-model steps are implemented through `pos_sales`. Synthetic generation covers the clean operational flow and a separately generated error scenario with short deliveries, missing items, wrong products and stocktake corrections. Actual menu names, selling prices and recipe quantities remain TBD and are not included as production seed data.
 
@@ -91,6 +92,24 @@ Run the generator unit tests with:
 PYTHONPATH=src python3 -m unittest discover -s tests -v
 ```
 
+## Operations API
+
+Install the API and test dependencies in a virtual environment:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -e '.[api,test]'
+```
+
+Start the API against a migrated and loaded PostgreSQL database:
+
+```bash
+DATABASE_URL=postgresql://localhost/cafe_stock_manage_dev \
+  .venv/bin/cafe-api
+```
+
+The service exposes interactive OpenAPI documentation at `http://127.0.0.1:8000/docs`. Operational endpoints are under `/api`, including current inventory, product movements, receiving discrepancies, stocktake accuracy and dashboard KPIs.
+
 ## Design notes
 
-See [Inventory ledger and stocktake design](docs/inventory-ledger.md) for movement and reconciliation rules, [Menu Recipe and POS Usage Design](docs/menu-recipe-pos.md) for recipe conversion and POS posting, [Synthetic Data Generation](docs/synthetic-data.md) for the configurable prototype, and [PostgreSQL Dataset Import](docs/database-import.md) for loading and quality checks.
+See [Inventory ledger and stocktake design](docs/inventory-ledger.md) for movement and reconciliation rules, [Menu Recipe and POS Usage Design](docs/menu-recipe-pos.md) for recipe conversion and POS posting, [Synthetic Data Generation](docs/synthetic-data.md) for the configurable prototype, [PostgreSQL Dataset Import](docs/database-import.md) for loading and quality checks, and [Operations API](docs/api.md) for the read-only HTTP contract.

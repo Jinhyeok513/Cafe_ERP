@@ -8,9 +8,20 @@ version = "0.1.0"
 description = "Cafe inventory operations and synthetic data tooling"
 requires-python = ">=3.11"
 
+[project.optional-dependencies]
+api = [
+    "fastapi>=0.116,<1",
+    "psycopg[binary,pool]>=3.2,<4",
+    "uvicorn>=0.35,<1",
+]
+test = [
+    "httpx2>=2.12,<3",
+]
+
 [project.scripts]
 cafe-generate-prototype = "cafe_stock_manage.synthetic:main"
 cafe-load-dataset = "cafe_stock_manage.db_loader:main"
+cafe-api = "cafe_stock_manage.api:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
