@@ -465,20 +465,25 @@ def write_dataset(
 ) -> None:
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
+    file_metadata: dict[str, dict[str, Any]] = {}
 
     for dataset_name, rows in dataset.items():
         csv_path = output_path / f"{dataset_name}.csv"
         if not rows:
             csv_path.write_text("", encoding="utf-8")
-            continue
-        with csv_path.open("w", newline="", encoding="utf-8") as csv_file:
-            writer = csv.DictWriter(
-                csv_file,
-                fieldnames=list(rows[0]),
-                lineterminator="\n",
-            )
-            writer.writeheader()
-            writer.writerows(rows)
+        else:
+            with csv_path.open("w", newline="", encoding="utf-8") as csv_file:
+                writer = csv.DictWriter(
+                    csv_file,
+                    fieldnames=list(rows[0]),
+                    lineterminator="\n",
+                )
+                writer.writeheader()
+                writer.writerows(rows)
+        file_metadata[csv_path.name] = {
+            "rows": len(rows),
+            "sha256": hashlib.sha256(csv_path.read_bytes()).hexdigest(),
+        }
 
     manifest = {
         "project": "Cafe_Stock_manage",
@@ -488,6 +493,7 @@ def write_dataset(
         "start_date": config["date_range"]["start_date"],
         "days": config["date_range"]["days"],
         "dataset_sha256": dataset_hash(dataset),
+        "files": file_metadata,
         "row_counts": {name: len(rows) for name, rows in dataset.items()},
     }
     with (output_path / "manifest.json").open("w", encoding="utf-8") as manifest_file:

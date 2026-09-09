@@ -2,6 +2,64 @@
   "assumption_status": "synthetic_demo",
   "dataset_sha256": "4bdea7f61b6aa79cfce44f49fb2273c6edda72e31421e46d487463265ad89fe4",
   "days": 30,
+  "files": {
+    "calendar.csv": {
+      "rows": 30,
+      "sha256": "3eec2e1be69f92a4af60dc8d111ffd4ac4a3731a3e8797a84d7d6ce62bdc23f2"
+    },
+    "daily_summary.csv": {
+      "rows": 30,
+      "sha256": "feb59913060f02af28598f268c2bed0730853bb4b4dff6ba6a143bf182c13f6e"
+    },
+    "goods_receipt_items.csv": {
+      "rows": 93,
+      "sha256": "de06d44f71b5e91b816fcec11c5b887ce73d40097f9cfc9c60483cff4f2ee7da"
+    },
+    "goods_receipts.csv": {
+      "rows": 68,
+      "sha256": "8bafeb6ac854b1adf32708f9be0fcaaea5799a830fec658103e36ff2319c4065"
+    },
+    "inventory_movements.csv": {
+      "rows": 552,
+      "sha256": "beec100f0f7db162b9e09f88c82b040a5659acc41efb34eacfbf83f8bb876134"
+    },
+    "inventory_usage.csv": {
+      "rows": 330,
+      "sha256": "80016277fc1f6473c5c8fe89098c5b5da67c0728b46db07083da556ca3da331b"
+    },
+    "menu_items.csv": {
+      "rows": 8,
+      "sha256": "d87ef72fbde8006f791345226c07970e1a415b09ae3a2dabdb4b470a511f15ed"
+    },
+    "pos_sales.csv": {
+      "rows": 240,
+      "sha256": "01ed53a748c4e1afdae2cdd1df56aadd0a862167cb0ff963dda0d83a497a4c8c"
+    },
+    "purchase_order_items.csv": {
+      "rows": 98,
+      "sha256": "25f6da94833f22487a19370a4a375a7443259c88cab99611b3b5b142a054d318"
+    },
+    "purchase_orders.csv": {
+      "rows": 72,
+      "sha256": "338a29b3bc77d9bca0a67ad24b0c8f24ecebd5a04a055bc7da3ac2c040918a6c"
+    },
+    "recipes.csv": {
+      "rows": 11,
+      "sha256": "3d87d39b0321db38b1f9d1e15a9a30f1f851880fec235d86994ccd7b5a93effa"
+    },
+    "scenario_events.csv": {
+      "rows": 9,
+      "sha256": "b4960fbdd4968fdc923f8dc68aabc7979feefce8551e8fa4eb273cffd94f701f"
+    },
+    "stocktake_items.csv": {
+      "rows": 270,
+      "sha256": "5c391775ad02970e32338b94a8d13e1db1bb35b81d256c866e61800f2ee72df1"
+    },
+    "stocktakes.csv": {
+      "rows": 30,
+      "sha256": "bae495630d2f2ce9bd036c8442f4aa224d3da339f6d07fe7ac90b3f6bceb248b"
+    }
+  },
   "project": "Cafe_Stock_manage",
   "random_seed": 513,
   "row_counts": {

@@ -19,6 +19,8 @@ Cafe Stock Manage is a cafe inventory operations system built around an immutabl
 - Configurable demo assumptions with seed and output manifest
 - Consumption-driven orders, scheduled receipts, waste and daily stocktakes
 - Separate deterministic error scenario for receiving and stocktake reconciliation
+- Transactional PostgreSQL dataset loader with checksum verification
+- Inventory timeline, stock status, discrepancy and stocktake quality views
 
 The agreed operational data-model steps are implemented through `pos_sales`. Synthetic generation covers the clean operational flow and a separately generated error scenario with short deliveries, missing items, wrong products and stocktake corrections. Actual menu names, selling prices and recipe quantities remain TBD and are not included as production seed data.
 
@@ -45,6 +47,7 @@ psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/001_core_table
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/002_inventory_movements.sql
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/003_stocktakes.sql
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/004_menu_recipes_pos.sql
+psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/005_dataset_import_and_quality.sql
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/seeds/001_reference_data.sql
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/tests/001_inventory_and_stocktake_flow.sql
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/tests/002_recipe_pos_usage_flow.sql
@@ -72,6 +75,16 @@ PYTHONPATH=src python3 -m cafe_stock_manage.synthetic \
   --output data/generated/prototype-errors
 ```
 
+Load a generated dataset after applying the migrations and seed data:
+
+```bash
+PYTHONPATH=src python3 -m cafe_stock_manage.db_loader \
+  data/generated/prototype-errors \
+  --database-url cafe_stock_manage_dev
+```
+
+The loader verifies every CSV checksum and row count, then imports all operational records in one transaction. It returns successfully without duplicating rows when the same dataset is already loaded. Use `--reset` only when intentionally replacing the current operational dataset with another scenario.
+
 Run the generator unit tests with:
 
 ```bash
@@ -80,4 +93,4 @@ PYTHONPATH=src python3 -m unittest discover -s tests -v
 
 ## Design notes
 
-See [Inventory ledger and stocktake design](docs/inventory-ledger.md) for movement and reconciliation rules, [Menu Recipe and POS Usage Design](docs/menu-recipe-pos.md) for recipe conversion and POS posting, and [Synthetic Data Generation](docs/synthetic-data.md) for the configurable prototype.
+See [Inventory ledger and stocktake design](docs/inventory-ledger.md) for movement and reconciliation rules, [Menu Recipe and POS Usage Design](docs/menu-recipe-pos.md) for recipe conversion and POS posting, [Synthetic Data Generation](docs/synthetic-data.md) for the configurable prototype, and [PostgreSQL Dataset Import](docs/database-import.md) for loading and quality checks.

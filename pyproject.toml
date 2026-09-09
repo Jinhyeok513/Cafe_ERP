@@ -10,6 +10,7 @@ requires-python = ">=3.11"
 
 [project.scripts]
 cafe-generate-prototype = "cafe_stock_manage.synthetic:main"
+cafe-load-dataset = "cafe_stock_manage.db_loader:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

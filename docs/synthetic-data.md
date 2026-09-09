@@ -54,7 +54,7 @@ Running the generator produces:
 - `scenario_events.csv` in the error scenario
 - `manifest.json`
 
-The manifest records the scenario, random seed, date range, row counts and a deterministic SHA-256 hash of the generated records.
+The manifest records the scenario, random seed, date range, row counts, a deterministic dataset SHA-256 and a SHA-256 checksum for every CSV. The database loader verifies the file checksums and row counts before opening an import transaction.
 
 ## Scenarios
 

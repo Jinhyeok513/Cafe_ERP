@@ -2,6 +2,60 @@
   "assumption_status": "synthetic_demo",
   "dataset_sha256": "a67ee2d97a895e6152e8a1411bbce841f4886e9eee3255ab35887c720d64caa5",
   "days": 30,
+  "files": {
+    "calendar.csv": {
+      "rows": 30,
+      "sha256": "3eec2e1be69f92a4af60dc8d111ffd4ac4a3731a3e8797a84d7d6ce62bdc23f2"
+    },
+    "daily_summary.csv": {
+      "rows": 30,
+      "sha256": "feb59913060f02af28598f268c2bed0730853bb4b4dff6ba6a143bf182c13f6e"
+    },
+    "goods_receipt_items.csv": {
+      "rows": 93,
+      "sha256": "8140c086edbe086c62dd73dc98fff8efcb87aea050acee8cc7f1cbdefdb5fba5"
+    },
+    "goods_receipts.csv": {
+      "rows": 68,
+      "sha256": "93e618cce6960bf620cdb377a8eb05a8a7f3cadd333e7209d7a45f38247fc943"
+    },
+    "inventory_movements.csv": {
+      "rows": 552,
+      "sha256": "b4878ffa7901e78e7acd1ebd0f6d743e0e82da309d914f278aebce0ab8176300"
+    },
+    "inventory_usage.csv": {
+      "rows": 330,
+      "sha256": "80016277fc1f6473c5c8fe89098c5b5da67c0728b46db07083da556ca3da331b"
+    },
+    "menu_items.csv": {
+      "rows": 8,
+      "sha256": "d87ef72fbde8006f791345226c07970e1a415b09ae3a2dabdb4b470a511f15ed"
+    },
+    "pos_sales.csv": {
+      "rows": 240,
+      "sha256": "01ed53a748c4e1afdae2cdd1df56aadd0a862167cb0ff963dda0d83a497a4c8c"
+    },
+    "purchase_order_items.csv": {
+      "rows": 98,
+      "sha256": "44138e5dfc3035182a5f4cb179368146ed48331b5482babfe0d4d2bd7d857f92"
+    },
+    "purchase_orders.csv": {
+      "rows": 72,
+      "sha256": "23459088500a35375181a2d4970b6741158b537baea17a3d23875251fdd1582d"
+    },
+    "recipes.csv": {
+      "rows": 11,
+      "sha256": "3d87d39b0321db38b1f9d1e15a9a30f1f851880fec235d86994ccd7b5a93effa"
+    },
+    "stocktake_items.csv": {
+      "rows": 270,
+      "sha256": "f7e3ab08eb12a3a92556b0807a8864b8ddfd8eb2995e69ce5ea605f21a44da9d"
+    },
+    "stocktakes.csv": {
+      "rows": 30,
+      "sha256": "bae495630d2f2ce9bd036c8442f4aa224d3da339f6d07fe7ac90b3f6bceb248b"
+    }
+  },
   "project": "Cafe_Stock_manage",
   "random_seed": 513,
   "row_counts": {
