@@ -433,3 +433,154 @@ class InventoryRepository:
             "ordered_by": ordered_by,
             "items": created_items,
         }
+
+    def pos_days(self, limit: int) -> list[dict[str, Any]]:
+        return self.fetch_all(
+            """
+            SELECT
+                sale_date,
+                menu_lines,
+                items_sold,
+                gross_revenue,
+                posted_lines,
+                pending_lines,
+                missing_recipe_lines
+            FROM cafe_stock_manage.pos_daily_summary
+            ORDER BY sale_date DESC
+            LIMIT %s
+            """,
+            (limit,),
+        )
+
+    def pos_usage(self, sale_date: date | None) -> list[dict[str, Any]]:
+        return self.fetch_all(
+            """
+            SELECT
+                sale_date,
+                product_id,
+                product_name,
+                category,
+                inventory_unit,
+                usage_quantity,
+                contributing_menu_items
+            FROM cafe_stock_manage.pos_daily_inventory_usage
+            WHERE sale_date = COALESCE(
+                %s::DATE,
+                (SELECT MAX(sale_date) FROM cafe_stock_manage.pos_daily_inventory_usage)
+            )
+            ORDER BY usage_quantity DESC, product_name
+            """,
+            (sale_date,),
+        )
+
+    def menu_items(self) -> list[dict[str, Any]]:
+        return self.fetch_all(
+            """
+            SELECT
+                mi.menu_item_id,
+                mi.menu_item_name,
+                mi.menu_category,
+                mi.selling_price,
+                COUNT(r.recipe_id) AS recipe_ingredient_count
+            FROM cafe_stock_manage.menu_items AS mi
+            LEFT JOIN cafe_stock_manage.recipes AS r
+              ON r.menu_item_id = mi.menu_item_id
+            WHERE mi.is_active
+            GROUP BY mi.menu_item_id
+            ORDER BY mi.menu_category, mi.menu_item_name
+            """
+        )
+
+    def import_pos_sales(
+        self,
+        rows: list[dict[str, Any]],
+        recorded_by: str,
+    ) -> dict[str, Any]:
+        keys = [(row["sale_date"], row["menu_item_id"]) for row in rows]
+        if len(keys) != len(set(keys)):
+            raise ValueError("A date and menu item can appear only once in an import")
+
+        menu_ids = sorted({row["menu_item_id"] for row in rows})
+        with self.pool.connection() as connection:
+            with connection.transaction():
+                with connection.cursor(row_factory=dict_row) as cursor:
+                    cursor.execute(
+                        """
+                        SELECT
+                            mi.menu_item_id,
+                            mi.menu_item_name,
+                            COUNT(r.recipe_id) AS recipe_count
+                        FROM cafe_stock_manage.menu_items AS mi
+                        LEFT JOIN cafe_stock_manage.recipes AS r
+                          ON r.menu_item_id = mi.menu_item_id
+                        WHERE mi.menu_item_id = ANY(%s) AND mi.is_active
+                        GROUP BY mi.menu_item_id
+                        """,
+                        (menu_ids,),
+                    )
+                    menus = {row["menu_item_id"]: row for row in cursor.fetchall()}
+                    missing = sorted(set(menu_ids) - set(menus))
+                    if missing:
+                        raise ValueError(f"Unknown active menu items: {', '.join(missing)}")
+                    without_recipe = sorted(
+                        row["menu_item_name"]
+                        for row in menus.values()
+                        if row["recipe_count"] == 0
+                    )
+                    if without_recipe:
+                        raise ValueError(
+                            "Menu items have no recipe: " + ", ".join(without_recipe)
+                        )
+
+                    inserted_sales: list[dict[str, Any]] = []
+                    movement_count = 0
+                    batch_key = str(uuid4())
+                    for index, row in enumerate(rows, start=1):
+                        source_key = f"POS-IMPORT-{batch_key}-{index}"
+                        cursor.execute(
+                            """
+                            INSERT INTO cafe_stock_manage.pos_sales (
+                                source_key,
+                                sale_date,
+                                menu_item_id,
+                                quantity_sold,
+                                unit_price,
+                                notes
+                            )
+                            VALUES (%s, %s, %s, %s, %s, %s)
+                            ON CONFLICT (sale_date, menu_item_id) DO NOTHING
+                            RETURNING
+                                pos_sale_id,
+                                source_key,
+                                sale_date,
+                                menu_item_id,
+                                quantity_sold,
+                                unit_price,
+                                gross_revenue
+                            """,
+                            (
+                                source_key,
+                                row["sale_date"],
+                                row["menu_item_id"],
+                                row["quantity_sold"],
+                                row["unit_price"],
+                                "Imported through POS usage workflow",
+                            ),
+                        )
+                        sale = cursor.fetchone()
+                        if sale is None:
+                            continue
+                        inserted_sales.append(sale)
+                        cursor.execute(
+                            "SELECT movement_id FROM cafe_stock_manage.post_pos_sale_usage(%s, %s)",
+                            (sale["pos_sale_id"], recorded_by),
+                        )
+                        movement_count += len(cursor.fetchall())
+
+        return {
+            "received_rows": len(rows),
+            "inserted_rows": len(inserted_sales),
+            "skipped_rows": len(rows) - len(inserted_sales),
+            "movement_count": movement_count,
+            "sales": inserted_sales,
+        }

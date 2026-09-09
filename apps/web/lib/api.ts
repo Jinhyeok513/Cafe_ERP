@@ -86,6 +86,40 @@ export type ReorderRecommendation = {
   urgency: "CRITICAL" | "ORDER_NOW" | "REVIEW" | "PLANNED";
 };
 
+export type PosDay = {
+  sale_date: string;
+  menu_lines: number;
+  items_sold: number;
+  gross_revenue: string;
+  posted_lines: number;
+  pending_lines: number;
+  missing_recipe_lines: number;
+};
+
+export type PosUsage = {
+  sale_date: string;
+  product_id: string;
+  product_name: string;
+  category: string;
+  inventory_unit: string;
+  usage_quantity: string;
+  contributing_menu_items: number;
+};
+
+export type MenuItem = {
+  menu_item_id: string;
+  menu_item_name: string;
+  menu_category: string;
+  selling_price: string;
+  recipe_ingredient_count: number;
+};
+
+export type PosData = {
+  days: PosDay[];
+  usage: PosUsage[];
+  menuItems: MenuItem[];
+};
+
 const API_URL = process.env.CAFE_API_URL ?? "http://127.0.0.1:8010";
 
 export function cafeApiUrl(path: string) {
@@ -102,6 +136,15 @@ async function getJson<T>(path: string): Promise<T> {
 
 export async function getReorderRecommendations(): Promise<ReorderRecommendation[]> {
   return getJson<ReorderRecommendation[]>("/api/reorder/recommendations");
+}
+
+export async function getPosData(): Promise<PosData> {
+  const [days, usage, menuItems] = await Promise.all([
+    getJson<PosDay[]>("/api/pos/days?limit=14"),
+    getJson<PosUsage[]>("/api/pos/usage"),
+    getJson<MenuItem[]>("/api/pos/menu-items"),
+  ]);
+  return { days, usage, menuItems };
 }
 
 export async function getDashboardData(): Promise<DashboardData> {

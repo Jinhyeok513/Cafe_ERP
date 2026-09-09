@@ -17,7 +17,7 @@ const navigation = [
   { label: "Receiving", icon: ReceiptText, href: "/#exceptions-title" },
   { label: "Stocktakes", icon: ClipboardCheck, href: "/#accuracy-title" },
   { label: "Reorder", icon: PackagePlus, href: "/reorder" },
-  { label: "POS usage", icon: ShoppingCart, href: "/#pos-usage" },
+  { label: "POS usage", icon: ShoppingCart, href: "/pos-usage" },
   { label: "Forecast", icon: TrendingUp, href: "/#forecast" },
   { label: "Reports", icon: FileSpreadsheet, href: "/#reports" },
 ];

@@ -162,6 +162,65 @@ class FakeInventoryRepository:
             ],
         }
 
+    def pos_days(self, limit):
+        del limit
+        return [
+            {
+                "sale_date": date(2024, 4, 30),
+                "menu_lines": 8,
+                "items_sold": 208,
+                "gross_revenue": Decimal("1735.50"),
+                "posted_lines": 8,
+                "pending_lines": 0,
+                "missing_recipe_lines": 0,
+            }
+        ]
+
+    def pos_usage(self, sale_date):
+        del sale_date
+        return [
+            {
+                "sale_date": date(2024, 4, 30),
+                "product_id": "MILK_OAT",
+                "product_name": "Oat Milk",
+                "category": "MILK",
+                "inventory_unit": "carton",
+                "usage_quantity": Decimal("9.75"),
+                "contributing_menu_items": 1,
+            }
+        ]
+
+    def menu_items(self):
+        return [
+            {
+                "menu_item_id": "DEMO_OAT_LATTE",
+                "menu_item_name": "Demo Oat Latte",
+                "menu_category": "HOT_COFFEE",
+                "selling_price": Decimal("6.20"),
+                "recipe_ingredient_count": 2,
+            }
+        ]
+
+    def import_pos_sales(self, rows, recorded_by):
+        del recorded_by
+        if rows[0]["menu_item_id"] == "UNKNOWN":
+            raise ValueError("Unknown active menu items: UNKNOWN")
+        return {
+            "received_rows": len(rows),
+            "inserted_rows": len(rows),
+            "skipped_rows": 0,
+            "movement_count": 2,
+            "sales": [
+                {
+                    "pos_sale_id": 301,
+                    "source_key": "POS-IMPORT-test-1",
+                    **row,
+                    "gross_revenue": row["quantity_sold"] * row["unit_price"],
+                }
+                for row in rows
+            ],
+        }
+
 
 class ApiTests(unittest.TestCase):
     @classmethod
@@ -254,6 +313,65 @@ class ApiTests(unittest.TestCase):
 
         self.assertEqual(empty_items.status_code, 422)
         self.assertEqual(invalid_supplier.status_code, 422)
+
+    def test_pos_usage_reporting_and_import(self) -> None:
+        days = self.client.get("/api/pos/days")
+        usage = self.client.get("/api/pos/usage")
+        menu_items = self.client.get("/api/pos/menu-items")
+        imported = self.client.post(
+            "/api/pos/import",
+            json={
+                "recorded_by": "Manager",
+                "rows": [
+                    {
+                        "sale_date": "2026-09-09",
+                        "menu_item_id": "DEMO_OAT_LATTE",
+                        "quantity_sold": 4,
+                        "unit_price": "6.20",
+                    }
+                ],
+            },
+        )
+
+        self.assertEqual(days.status_code, 200)
+        self.assertEqual(days.json()[0]["posted_lines"], 8)
+        self.assertEqual(usage.json()[0]["inventory_unit"], "carton")
+        self.assertEqual(menu_items.json()[0]["recipe_ingredient_count"], 2)
+        self.assertEqual(imported.status_code, 201)
+        self.assertEqual(imported.json()["movement_count"], 2)
+
+    def test_invalid_pos_import_is_rejected(self) -> None:
+        invalid_quantity = self.client.post(
+            "/api/pos/import",
+            json={
+                "recorded_by": "Manager",
+                "rows": [
+                    {
+                        "sale_date": "2026-09-09",
+                        "menu_item_id": "DEMO_OAT_LATTE",
+                        "quantity_sold": 0,
+                        "unit_price": "6.20",
+                    }
+                ],
+            },
+        )
+        unknown_menu = self.client.post(
+            "/api/pos/import",
+            json={
+                "recorded_by": "Manager",
+                "rows": [
+                    {
+                        "sale_date": "2026-09-09",
+                        "menu_item_id": "UNKNOWN",
+                        "quantity_sold": 1,
+                        "unit_price": "6.20",
+                    }
+                ],
+            },
+        )
+
+        self.assertEqual(invalid_quantity.status_code, 422)
+        self.assertEqual(unknown_menu.status_code, 422)
 
 
 if __name__ == "__main__":

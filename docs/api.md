@@ -35,6 +35,10 @@ API_PORT=8000 \
 | GET | `/api/stocktakes/accuracy` | Daily physical-count accuracy |
 | GET | `/api/reorder/recommendations` | Consumption-based supplier order recommendations |
 | POST | `/api/purchase-orders/drafts` | Create a validated draft purchase order |
+| GET | `/api/pos/days` | Daily sales and recipe posting status |
+| GET | `/api/pos/usage` | Ingredient usage for one sales date or the latest date |
+| GET | `/api/pos/menu-items` | Active menu IDs available to POS imports |
+| POST | `/api/pos/import` | Validate and post a batch of daily menu totals |
 
 Interactive OpenAPI documentation is available at `/docs`, with the raw schema at `/openapi.json`.
 
@@ -54,6 +58,8 @@ Movement history supports the four ledger movement types. Receiving discrepancie
 All query values are passed to Psycopg as parameters. Only fixed internal SQL fragments are composed for optional filters.
 
 Draft purchase orders accept one supplier, delivery date, operator and one or more positive product quantities. Products are checked against the Product Master, must be active, and must belong to the selected supplier. The API always derives `order_unit` from Product Master rather than trusting client input.
+
+POS imports accept daily menu totals as JSON after the web client parses the CSV. The batch is transactional: all menu IDs and recipes are checked first, duplicate date/menu totals are skipped, and each inserted sale calls the idempotent recipe posting function. The response separates received, inserted and skipped rows and reports the number of immutable `USE` movements created.
 
 ## Error behavior
 

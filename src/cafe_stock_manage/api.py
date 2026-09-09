@@ -143,6 +143,64 @@ class DraftPurchaseOrderResponse(BaseModel):
     items: list[DraftPurchaseOrderItemResponse]
 
 
+class PosDayItem(BaseModel):
+    sale_date: date
+    menu_lines: int
+    items_sold: int
+    gross_revenue: Decimal
+    posted_lines: int
+    pending_lines: int
+    missing_recipe_lines: int
+
+
+class PosUsageItem(BaseModel):
+    sale_date: date
+    product_id: str
+    product_name: str
+    category: str
+    inventory_unit: str
+    usage_quantity: Decimal
+    contributing_menu_items: int
+
+
+class MenuItemResponse(BaseModel):
+    menu_item_id: str
+    menu_item_name: str
+    menu_category: str
+    selling_price: Decimal
+    recipe_ingredient_count: int
+
+
+class PosImportRow(BaseModel):
+    sale_date: date
+    menu_item_id: str = Field(min_length=1, max_length=80)
+    quantity_sold: int = Field(gt=0, le=100000)
+    unit_price: Decimal = Field(ge=0, max_digits=12, decimal_places=2)
+
+
+class PosImportRequest(BaseModel):
+    recorded_by: str = Field(min_length=1, max_length=120)
+    rows: list[PosImportRow] = Field(min_length=1, max_length=5000)
+
+
+class ImportedPosSale(BaseModel):
+    pos_sale_id: int
+    source_key: str
+    sale_date: date
+    menu_item_id: str
+    quantity_sold: int
+    unit_price: Decimal
+    gross_revenue: Decimal
+
+
+class PosImportResponse(BaseModel):
+    received_rows: int
+    inserted_rows: int
+    skipped_rows: int
+    movement_count: int
+    sales: list[ImportedPosSale]
+
+
 def get_repository(request: Request) -> InventoryRepository:
     return request.app.state.repository
 
@@ -228,6 +286,54 @@ def create_app(repository: InventoryRepository | Any | None = None) -> FastAPI:
                 request.expected_delivery_date,
                 request.ordered_by,
                 [item.model_dump() for item in request.items],
+            )
+        except ValueError as error:
+            raise HTTPException(status_code=422, detail=str(error)) from error
+
+    @app.get(
+        "/api/pos/days",
+        response_model=list[PosDayItem],
+        tags=["pos-usage"],
+    )
+    def pos_days(
+        repo: RepositoryDependency,
+        limit: int = Query(default=30, ge=1, le=366),
+    ) -> list[dict[str, Any]]:
+        return repo.pos_days(limit)
+
+    @app.get(
+        "/api/pos/usage",
+        response_model=list[PosUsageItem],
+        tags=["pos-usage"],
+    )
+    def pos_usage(
+        repo: RepositoryDependency,
+        sale_date: date | None = Query(default=None),
+    ) -> list[dict[str, Any]]:
+        return repo.pos_usage(sale_date)
+
+    @app.get(
+        "/api/pos/menu-items",
+        response_model=list[MenuItemResponse],
+        tags=["pos-usage"],
+    )
+    def menu_items(repo: RepositoryDependency) -> list[dict[str, Any]]:
+        return repo.menu_items()
+
+    @app.post(
+        "/api/pos/import",
+        response_model=PosImportResponse,
+        status_code=201,
+        tags=["pos-usage"],
+    )
+    def import_pos_sales(
+        request: PosImportRequest,
+        repo: RepositoryDependency,
+    ) -> dict[str, Any]:
+        try:
+            return repo.import_pos_sales(
+                [row.model_dump() for row in request.rows],
+                request.recorded_by,
             )
         except ValueError as error:
             raise HTTPException(status_code=422, detail=str(error)) from error

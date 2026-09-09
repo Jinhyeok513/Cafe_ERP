@@ -24,6 +24,7 @@ Cafe Stock Manage is a cafe inventory operations system built around an immutabl
 - FastAPI for inventory, movement, discrepancy, stocktake and reorder operations
 - Responsive Next.js operations dashboard backed by the live API
 - Consumption-based reorder recommendations and draft purchase-order creation
+- Validated POS CSV import with recipe-derived inventory usage posting
 
 The agreed operational data-model steps are implemented through `pos_sales`. Synthetic generation covers the clean operational flow and a separately generated error scenario with short deliveries, missing items, wrong products and stocktake corrections. Actual menu names, selling prices and recipe quantities remain TBD and are not included as production seed data.
 
@@ -52,6 +53,7 @@ psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/003_stocktakes
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/004_menu_recipes_pos.sql
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/005_dataset_import_and_quality.sql
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/006_reorder_planning.sql
+psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/007_pos_usage_operations.sql
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/seeds/001_reference_data.sql
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/tests/001_inventory_and_stocktake_flow.sql
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/tests/002_recipe_pos_usage_flow.sql
@@ -123,8 +125,8 @@ pnpm install
 CAFE_API_URL=http://127.0.0.1:8000 pnpm dev
 ```
 
-Open `http://127.0.0.1:3000` to view live inventory balances, reorder alerts, receiving exceptions and stocktake accuracy. Reorder planning is available at `/reorder`; it calculates recommendations in stock units and creates supplier purchase orders in `DRAFT` status. The dashboard performs server-side API requests and does not expose database credentials to the browser.
+Open `http://127.0.0.1:3000` to view live inventory balances, reorder alerts, receiving exceptions and stocktake accuracy. Reorder planning is available at `/reorder`; it calculates recommendations in stock units and creates supplier purchase orders in `DRAFT` status. `/pos-usage` validates daily POS CSV files and posts recipe-derived `USE` movements. The dashboard performs server-side API requests and does not expose database credentials to the browser.
 
 ## Design notes
 
-See [Inventory ledger and stocktake design](docs/inventory-ledger.md) for movement and reconciliation rules, [Menu Recipe and POS Usage Design](docs/menu-recipe-pos.md) for recipe conversion and POS posting, [Synthetic Data Generation](docs/synthetic-data.md) for the configurable prototype, [PostgreSQL Dataset Import](docs/database-import.md) for loading and quality checks, [Reorder Planning](docs/reorder-planning.md) for replenishment calculations, and [Operations API](docs/api.md) for the HTTP contract.
+See [Inventory ledger and stocktake design](docs/inventory-ledger.md) for movement and reconciliation rules, [Menu Recipe and POS Usage Design](docs/menu-recipe-pos.md) for recipe conversion, [POS Usage Operations](docs/pos-usage-operations.md) for validated imports, [Synthetic Data Generation](docs/synthetic-data.md) for the configurable prototype, [PostgreSQL Dataset Import](docs/database-import.md) for loading and quality checks, [Reorder Planning](docs/reorder-planning.md) for replenishment calculations, and [Operations API](docs/api.md) for the HTTP contract.

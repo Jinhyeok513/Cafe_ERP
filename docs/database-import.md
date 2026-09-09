@@ -16,6 +16,7 @@ psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/003_stocktakes
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/004_menu_recipes_pos.sql
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/005_dataset_import_and_quality.sql
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/006_reorder_planning.sql
+psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/007_pos_usage_operations.sql
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/seeds/001_reference_data.sql
 ```
 
