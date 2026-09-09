@@ -12,8 +12,11 @@ Cafe Stock Manage is a cafe inventory operations system built around an immutabl
 - Daily stocktake capture and reconciliation
 - Idempotent receipt and stocktake posting
 - SQL flow test covering short delivery, usage and stocktake adjustment
+- Menu Item and Recipe/BOM tables with unit validation
+- Daily POS sales and recipe-derived inventory usage posting
+- Protection against duplicate posting and edits to posted sales
 
-The next data-model step is `menu_items` and `recipes`, followed by `pos_sales`.
+The agreed operational data-model steps are now implemented through `pos_sales`. The next project stage is synthetic data generation. Actual menu names, selling prices and recipe quantities remain TBD and are not included as production seed data.
 
 ## Inventory unit model
 
@@ -37,12 +40,14 @@ createdb cafe_stock_manage_dev
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/001_core_tables.sql
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/002_inventory_movements.sql
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/003_stocktakes.sql
+psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/migrations/004_menu_recipes_pos.sql
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/seeds/001_reference_data.sql
 psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/tests/001_inventory_and_stocktake_flow.sql
+psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/tests/002_recipe_pos_usage_flow.sql
 ```
 
 The test runs inside a transaction and rolls back its test records.
 
 ## Design notes
 
-See [Inventory ledger and stocktake design](docs/inventory-ledger.md) for the movement rules and reconciliation flow.
+See [Inventory ledger and stocktake design](docs/inventory-ledger.md) for movement and reconciliation rules, and [Menu Recipe and POS Usage Design](docs/menu-recipe-pos.md) for recipe conversion and POS posting.
