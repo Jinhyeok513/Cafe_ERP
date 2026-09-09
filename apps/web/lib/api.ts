@@ -155,7 +155,7 @@ export type ForecastData = {
   history: PosDay[];
 };
 
-const API_URL = process.env.CAFE_API_URL ?? "http://127.0.0.1:8010";
+const API_URL = process.env.CAFE_API_URL ?? process.env.BACKEND_URL ?? "http://127.0.0.1:8010";
 
 export function cafeApiUrl(path: string) {
   return `${API_URL}${path}`;

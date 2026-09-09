@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: cafe_erp_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d cafe_erp_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/cafe_erp_test
+      PGPASSWORD: postgres
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Python package
+        run: pip install -e '.[api,test]'
+
+      - name: Apply database schema and reference data
+        run: |
+          for file in db/migrations/*.sql db/seeds/*.sql; do
+            psql -v ON_ERROR_STOP=1 "$DATABASE_URL" -f "$file"
+          done
+
+      - name: Load deterministic operational scenario
+        run: cafe-load-dataset data/generated/prototype-errors --database-url "$DATABASE_URL"
+
+      - name: Run Python tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Run PostgreSQL flow tests
+        run: |
+          for file in db/tests/*.sql; do
+            psql -v ON_ERROR_STOP=1 "$DATABASE_URL" -f "$file"
+          done
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+
+      - name: Install web dependencies
+        working-directory: apps/web
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify web application
+        working-directory: apps/web
+        run: pnpm lint && pnpm build
