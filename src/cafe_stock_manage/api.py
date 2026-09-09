@@ -201,6 +201,35 @@ class PosImportResponse(BaseModel):
     sales: list[ImportedPosSale]
 
 
+class SalesForecastItem(BaseModel):
+    forecast_date: date
+    weekday_name: str
+    forecast_items_sold: int
+    forecast_revenue: Decimal
+    revenue_lower_bound: Decimal
+    revenue_upper_bound: Decimal
+    trend_factor: Decimal
+    forecast_method: str
+
+
+class InventoryForecastItem(BaseModel):
+    product_id: str
+    product_name: str
+    category: str
+    inventory_unit: str
+    supplier_id: str
+    supplier_name: str
+    lead_time_days: int
+    current_quantity: Decimal
+    on_order_quantity: Decimal
+    average_daily_depletion: Decimal
+    days_of_cover: Decimal | None
+    projected_quantity_7_days: Decimal
+    projected_quantity_14_days: Decimal
+    expected_stockout_date: date | None
+    risk_status: str
+
+
 def get_repository(request: Request) -> InventoryRepository:
     return request.app.state.repository
 
@@ -337,6 +366,25 @@ def create_app(repository: InventoryRepository | Any | None = None) -> FastAPI:
             )
         except ValueError as error:
             raise HTTPException(status_code=422, detail=str(error)) from error
+
+    @app.get(
+        "/api/forecast/sales",
+        response_model=list[SalesForecastItem],
+        tags=["forecast"],
+    )
+    def sales_forecast(
+        repo: RepositoryDependency,
+        days: int = Query(default=14, ge=1, le=30),
+    ) -> list[dict[str, Any]]:
+        return repo.sales_forecast(days)
+
+    @app.get(
+        "/api/forecast/inventory",
+        response_model=list[InventoryForecastItem],
+        tags=["forecast"],
+    )
+    def inventory_forecast(repo: RepositoryDependency) -> list[dict[str, Any]]:
+        return repo.inventory_forecast()
 
     @app.get("/api/inventory", response_model=list[InventoryItem], tags=["inventory"])
     def inventory(

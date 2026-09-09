@@ -584,3 +584,55 @@ class InventoryRepository:
             "movement_count": movement_count,
             "sales": inserted_sales,
         }
+
+    def sales_forecast(self, days: int) -> list[dict[str, Any]]:
+        return self.fetch_all(
+            """
+            SELECT
+                forecast_date,
+                weekday_name,
+                forecast_items_sold,
+                forecast_revenue,
+                revenue_lower_bound,
+                revenue_upper_bound,
+                trend_factor,
+                forecast_method
+            FROM cafe_stock_manage.forecast_daily_sales
+            ORDER BY forecast_date
+            LIMIT %s
+            """,
+            (days,),
+        )
+
+    def inventory_forecast(self) -> list[dict[str, Any]]:
+        return self.fetch_all(
+            """
+            SELECT
+                product_id,
+                product_name,
+                category,
+                inventory_unit,
+                supplier_id,
+                supplier_name,
+                lead_time_days,
+                current_quantity,
+                on_order_quantity,
+                average_daily_depletion,
+                days_of_cover,
+                projected_quantity_7_days,
+                projected_quantity_14_days,
+                expected_stockout_date,
+                risk_status
+            FROM cafe_stock_manage.inventory_depletion_forecast
+            ORDER BY
+                CASE risk_status
+                    WHEN 'STOCKOUT' THEN 1
+                    WHEN 'CRITICAL' THEN 2
+                    WHEN 'WATCH' THEN 3
+                    WHEN 'HEALTHY' THEN 4
+                    ELSE 5
+                END,
+                days_of_cover NULLS LAST,
+                product_name
+            """
+        )

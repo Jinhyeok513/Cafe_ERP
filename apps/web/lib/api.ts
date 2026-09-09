@@ -120,6 +120,41 @@ export type PosData = {
   menuItems: MenuItem[];
 };
 
+export type SalesForecast = {
+  forecast_date: string;
+  weekday_name: string;
+  forecast_items_sold: number;
+  forecast_revenue: string;
+  revenue_lower_bound: string;
+  revenue_upper_bound: string;
+  trend_factor: string;
+  forecast_method: string;
+};
+
+export type InventoryForecast = {
+  product_id: string;
+  product_name: string;
+  category: string;
+  inventory_unit: string;
+  supplier_id: string;
+  supplier_name: string;
+  lead_time_days: number;
+  current_quantity: string;
+  on_order_quantity: string;
+  average_daily_depletion: string;
+  days_of_cover: string | null;
+  projected_quantity_7_days: string;
+  projected_quantity_14_days: string;
+  expected_stockout_date: string | null;
+  risk_status: "STOCKOUT" | "CRITICAL" | "WATCH" | "HEALTHY" | "NO_USAGE";
+};
+
+export type ForecastData = {
+  sales: SalesForecast[];
+  inventory: InventoryForecast[];
+  history: PosDay[];
+};
+
 const API_URL = process.env.CAFE_API_URL ?? "http://127.0.0.1:8010";
 
 export function cafeApiUrl(path: string) {
@@ -145,6 +180,15 @@ export async function getPosData(): Promise<PosData> {
     getJson<MenuItem[]>("/api/pos/menu-items"),
   ]);
   return { days, usage, menuItems };
+}
+
+export async function getForecastData(): Promise<ForecastData> {
+  const [sales, inventory, history] = await Promise.all([
+    getJson<SalesForecast[]>("/api/forecast/sales?days=14"),
+    getJson<InventoryForecast[]>("/api/forecast/inventory"),
+    getJson<PosDay[]>("/api/pos/days?limit=14"),
+  ]);
+  return { sales, inventory, history };
 }
 
 export async function getDashboardData(): Promise<DashboardData> {

@@ -39,6 +39,8 @@ API_PORT=8000 \
 | GET | `/api/pos/usage` | Ingredient usage for one sales date or the latest date |
 | GET | `/api/pos/menu-items` | Active menu IDs available to POS imports |
 | POST | `/api/pos/import` | Validate and post a batch of daily menu totals |
+| GET | `/api/forecast/sales` | One to 30 days of revenue and item forecasts |
+| GET | `/api/forecast/inventory` | Product depletion, stockout date and risk |
 
 Interactive OpenAPI documentation is available at `/docs`, with the raw schema at `/openapi.json`.
 

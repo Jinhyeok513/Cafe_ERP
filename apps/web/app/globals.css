@@ -179,6 +179,34 @@ td strong { color: var(--ink); font-weight: 650; }
 .post-button { justify-content: center; width: 100%; }
 .usage-panel { margin-top: 14px; }
 .usage-table { min-width: 680px; }
+.forecast-summary { min-height: 86px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; box-shadow: var(--shadow); }
+.forecast-summary > div { display: grid; grid-template-columns: 25px 1fr; align-content: center; column-gap: 8px; padding: 0 18px; border-right: 1px solid var(--line); }
+.forecast-summary > div:last-child { border-right: 0; }
+.forecast-summary svg { grid-row: 1 / 3; align-self: center; color: var(--green); }
+.forecast-summary span { color: var(--muted); font-size: 10px; }
+.forecast-summary strong { font-size: 18px; }
+.positive { color: var(--green); }
+.forecast-chart-panel { margin-top: 14px; }
+.chart-legend { display: flex; gap: 14px; color: var(--muted); font-size: 10px; }
+.chart-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.chart-legend i { display: inline-block; }
+.legend-range { width: 7px; height: 14px; background: #c9dcd1; border-radius: 2px; }
+.legend-point { width: 12px; height: 3px; background: var(--green); }
+.forecast-chart { height: 310px; display: grid; grid-template-columns: repeat(14, minmax(30px, 1fr)); gap: 8px; align-items: end; padding: 22px 20px 14px; overflow-x: auto; }
+.forecast-column { height: 252px; min-width: 30px; display: grid; grid-template-rows: 20px 1fr 30px; justify-items: center; align-items: end; }
+.forecast-column > strong { color: var(--muted); font-size: 8px; font-weight: 600; white-space: nowrap; }
+.forecast-track { position: relative; width: 100%; max-width: 38px; height: 195px; background: repeating-linear-gradient(to top, #f7f8f6 0, #f7f8f6 38px, #e8ebe7 39px); border-bottom: 1px solid var(--line-strong); }
+.forecast-range { position: absolute; left: 25%; width: 50%; min-height: 3px; background: #c9dcd1; border-radius: 2px; }
+.forecast-point { position: absolute; left: 10%; width: 80%; height: 3px; margin-bottom: -1px; background: var(--green); border-radius: 2px; }
+.forecast-column small { display: grid; justify-items: center; color: var(--muted); font-size: 9px; line-height: 1.2; }
+.forecast-column small b { color: var(--ink); font-size: 10px; }
+.depletion-panel { margin-top: 14px; }
+.forecast-table { min-width: 920px; }
+.risk { display: inline-flex; min-height: 23px; align-items: center; padding: 0 8px; border-radius: 4px; white-space: nowrap; font-size: 10px; font-weight: 700; }
+.risk-stockout, .risk-critical { color: var(--red); background: var(--red-soft); }
+.risk-watch { color: var(--amber); background: var(--amber-soft); }
+.risk-healthy { color: var(--green); background: var(--green-soft); }
+.risk-no_usage { color: var(--blue); background: var(--blue-soft); }
 .loading-shell { min-height: 100vh; display: grid; grid-template-columns: 236px 1fr; }
 .loading-sidebar { background: var(--sidebar); }
 .loading-content { padding: 32px 40px; }
@@ -209,6 +237,7 @@ td strong { color: var(--ink); font-weight: 650; }
   .pos-summary { grid-template-columns: repeat(4, 1fr); }
   .pos-summary > p { grid-column: 1 / -1; padding: 10px 16px; border-top: 1px solid var(--line); }
   .pos-grid { grid-template-columns: 1fr; }
+  .forecast-chart { grid-template-columns: repeat(14, 38px); }
 }
 
 @media (max-width: 760px) {
@@ -274,6 +303,19 @@ td strong { color: var(--ink); font-weight: 650; }
   .usage-table th:nth-child(3) { width: 32%; }
   .usage-table th:nth-child(5) { width: 25%; }
   .usage-table th, .usage-table td { padding-inline: 10px; }
+  .forecast-summary { grid-template-columns: repeat(2, 1fr); }
+  .forecast-summary > div { min-height: 70px; padding-inline: 11px; border-bottom: 1px solid var(--line); }
+  .forecast-summary > div:nth-child(2) { border-right: 0; }
+  .forecast-summary > div:nth-child(n+3) { border-bottom: 0; }
+  .forecast-table { min-width: 0; table-layout: fixed; }
+  .forecast-table th:nth-child(3), .forecast-table td:nth-child(3),
+  .forecast-table th:nth-child(5), .forecast-table td:nth-child(5),
+  .forecast-table th:nth-child(6), .forecast-table td:nth-child(6) { display: none; }
+  .forecast-table th:first-child { width: 39%; }
+  .forecast-table th:nth-child(2) { width: 22%; }
+  .forecast-table th:nth-child(4) { width: 18%; }
+  .forecast-table th:nth-child(7) { width: 21%; }
+  .forecast-table th, .forecast-table td { padding-inline: 8px; }
   .loading-shell { display: block; }
   .loading-sidebar { height: 94px; }
   .loading-content { padding: 24px 14px; }

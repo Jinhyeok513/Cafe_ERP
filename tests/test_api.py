@@ -221,6 +221,41 @@ class FakeInventoryRepository:
             ],
         }
 
+    def sales_forecast(self, days):
+        return [
+            {
+                "forecast_date": date(2024, 5, 1),
+                "weekday_name": "Wed",
+                "forecast_items_sold": 220,
+                "forecast_revenue": Decimal("1580.25"),
+                "revenue_lower_bound": Decimal("1400.00"),
+                "revenue_upper_bound": Decimal("1760.50"),
+                "trend_factor": Decimal("1.03"),
+                "forecast_method": "WEEKDAY_BASELINE",
+            }
+        ][:days]
+
+    def inventory_forecast(self):
+        return [
+            {
+                "product_id": "MILK_OAT",
+                "product_name": "Oat Milk",
+                "category": "MILK",
+                "inventory_unit": "carton",
+                "supplier_id": "SUP_B",
+                "supplier_name": "Milk Supplier",
+                "lead_time_days": 1,
+                "current_quantity": Decimal("3.435"),
+                "on_order_quantity": Decimal("0"),
+                "average_daily_depletion": Decimal("12.9"),
+                "days_of_cover": Decimal("0.3"),
+                "projected_quantity_7_days": Decimal("-86.865"),
+                "projected_quantity_14_days": Decimal("-177.165"),
+                "expected_stockout_date": date(2024, 4, 30),
+                "risk_status": "CRITICAL",
+            }
+        ]
+
 
 class ApiTests(unittest.TestCase):
     @classmethod
@@ -372,6 +407,17 @@ class ApiTests(unittest.TestCase):
 
         self.assertEqual(invalid_quantity.status_code, 422)
         self.assertEqual(unknown_menu.status_code, 422)
+
+    def test_sales_and_inventory_forecast(self) -> None:
+        sales = self.client.get("/api/forecast/sales?days=7")
+        inventory = self.client.get("/api/forecast/inventory")
+        invalid_horizon = self.client.get("/api/forecast/sales?days=31")
+
+        self.assertEqual(sales.status_code, 200)
+        self.assertEqual(sales.json()[0]["forecast_method"], "WEEKDAY_BASELINE")
+        self.assertEqual(inventory.status_code, 200)
+        self.assertEqual(inventory.json()[0]["inventory_unit"], "carton")
+        self.assertEqual(invalid_horizon.status_code, 422)
 
 
 if __name__ == "__main__":
