@@ -19,7 +19,7 @@ const navigation = [
   { label: "Reorder", icon: PackagePlus, href: "/reorder" },
   { label: "POS usage", icon: ShoppingCart, href: "/pos-usage" },
   { label: "Forecast", icon: TrendingUp, href: "/forecast" },
-  { label: "Reports", icon: FileSpreadsheet, href: "/#reports" },
+  { label: "Reports", icon: FileSpreadsheet, href: "/reports" },
 ];
 
 export function Sidebar({ activeLabel = "Overview", reorderCount = 0 }: { activeLabel?: string; reorderCount?: number }) {
