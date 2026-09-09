@@ -250,8 +250,10 @@ def create_app(repository: InventoryRepository | Any | None = None) -> FastAPI:
             raise RuntimeError("DATABASE_URL is required to start the API")
         pool = ConnectionPool(
             database_url,
-            min_size=1,
+            min_size=0,
             max_size=int(os.environ.get("DATABASE_POOL_MAX_SIZE", "5")),
+            check=ConnectionPool.check_connection,
+            max_idle=float(os.environ.get("DATABASE_POOL_MAX_IDLE_SECONDS", "60")),
             open=False,
         )
         pool.open(wait=True)
