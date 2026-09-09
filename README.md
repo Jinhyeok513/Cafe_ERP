@@ -72,7 +72,7 @@ The test runs inside a transaction and rolls back its test records.
 The prototype assumptions are explicitly synthetic and configurable. Generate the committed 30-day dataset with:
 
 ```bash
-PYTHONPATH=src python3 -m cafe_stock_manage.synthetic \
+PYTHONPATH=backend/src python3 -m cafe_stock_manage.synthetic \
   --config config/prototype_assumptions.json \
   --scenario clean \
   --output data/generated/prototype
@@ -81,7 +81,7 @@ PYTHONPATH=src python3 -m cafe_stock_manage.synthetic \
 Generate the matching operational-error dataset with:
 
 ```bash
-PYTHONPATH=src python3 -m cafe_stock_manage.synthetic \
+PYTHONPATH=backend/src python3 -m cafe_stock_manage.synthetic \
   --config config/prototype_assumptions.json \
   --scenario errors \
   --output data/generated/prototype-errors
@@ -90,7 +90,7 @@ PYTHONPATH=src python3 -m cafe_stock_manage.synthetic \
 Load a generated dataset after applying the migrations and seed data:
 
 ```bash
-PYTHONPATH=src python3 -m cafe_stock_manage.db_loader \
+PYTHONPATH=backend/src python3 -m cafe_stock_manage.db_loader \
   data/generated/prototype-errors \
   --database-url cafe_stock_manage_dev
 ```
@@ -100,7 +100,7 @@ The loader verifies every CSV checksum and row count, then imports all operation
 Run the generator unit tests with:
 
 ```bash
-PYTHONPATH=src python3 -m unittest discover -s tests -v
+PYTHONPATH=backend/src python3 -m unittest discover -s tests -v
 ```
 
 ## Operations API

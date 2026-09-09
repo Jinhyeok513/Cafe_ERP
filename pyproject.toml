@@ -24,4 +24,4 @@ cafe-load-dataset = "cafe_stock_manage.db_loader:main"
 cafe-api = "cafe_stock_manage.api:main"
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = ["backend/src"]

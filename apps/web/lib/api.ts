@@ -155,7 +155,27 @@ export type ForecastData = {
   history: PosDay[];
 };
 
-const API_URL = process.env.CAFE_API_URL ?? process.env.BACKEND_URL ?? "http://127.0.0.1:8010";
+function apiBaseUrl() {
+  if (process.env.CAFE_API_URL) {
+    return process.env.CAFE_API_URL.replace(/\/$/, "");
+  }
+  const vercelHost =
+    process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL;
+  if (vercelHost) {
+    const deploymentUrl = vercelHost.replace(/\/$/, "");
+    const origin = deploymentUrl.startsWith("http")
+      ? deploymentUrl
+      : `https://${deploymentUrl}`;
+    return `${origin}/backend`;
+  }
+  if (process.env.BACKEND_URL) {
+    const backendUrl = process.env.BACKEND_URL.replace(/\/$/, "");
+    return backendUrl.endsWith("/backend") ? backendUrl : `${backendUrl}/backend`;
+  }
+  return "http://127.0.0.1:8010";
+}
+
+const API_URL = apiBaseUrl();
 
 export function cafeApiUrl(path: string) {
   return `${API_URL}${path}`;

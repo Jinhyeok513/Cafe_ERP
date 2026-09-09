@@ -73,12 +73,12 @@ reason_code = STOCKTAKE_CORRECTION
 Run both scenarios separately:
 
 ```bash
-PYTHONPATH=src python3 -m cafe_stock_manage.synthetic \
+PYTHONPATH=backend/src python3 -m cafe_stock_manage.synthetic \
   --config config/prototype_assumptions.json \
   --scenario clean \
   --output data/generated/prototype
 
-PYTHONPATH=src python3 -m cafe_stock_manage.synthetic \
+PYTHONPATH=backend/src python3 -m cafe_stock_manage.synthetic \
   --config config/prototype_assumptions.json \
   --scenario errors \
   --output data/generated/prototype-errors

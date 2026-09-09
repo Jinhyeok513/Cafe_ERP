@@ -24,7 +24,7 @@ psql -v ON_ERROR_STOP=1 -d cafe_stock_manage_dev -f db/seeds/001_reference_data.
 ## Load a scenario
 
 ```bash
-PYTHONPATH=src python3 -m cafe_stock_manage.db_loader \
+PYTHONPATH=backend/src python3 -m cafe_stock_manage.db_loader \
   data/generated/prototype-errors \
   --database-url cafe_stock_manage_dev
 ```
@@ -42,7 +42,7 @@ Before loading, the command checks:
 The same dataset hash is idempotent and returns without inserting duplicates. A different dataset is rejected while operational data exists. To intentionally switch between the clean and error scenarios, use:
 
 ```bash
-PYTHONPATH=src python3 -m cafe_stock_manage.db_loader \
+PYTHONPATH=backend/src python3 -m cafe_stock_manage.db_loader \
   data/generated/prototype \
   --database-url cafe_stock_manage_dev \
   --reset
